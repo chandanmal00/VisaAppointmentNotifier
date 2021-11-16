@@ -17,3 +17,7 @@ def isUSFriendlyTime():
     if hour>=8 and hour<=22:
         return True
     return False
+
+def getPSTTime():
+    dtobj = datetime.now(tz=gettz('US/Seattle'))
+    return dtobj.strftime('%Y%m%d %H:%M')
