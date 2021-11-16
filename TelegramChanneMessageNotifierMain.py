@@ -43,20 +43,35 @@ def getAllMessages(messages):
 def getTextMessages(messages):
     out=[]
     for m in messages:
+        if isBlacklistMessage(m):
+            continue
         if not m.media:
-            #ignore messages with ? mark
-            if '?' in m.message:
+            #ignore messages with ? mark and big messages too
+            if '?' in m.message or len(m.message)>=20:
                 continue
             if 'ss' in m.message.lower() or 'available' in m.message.lower() or 'bulk' in m.message.lower():
                 print(m.date, m.id, m.message)
                 out.append(m)
     return out
 
+def isBlacklistMessage(message):
+    if message.message:
+        mesg_lower = message.message.lower()
+        if 'fake' in mesg_lower or 'spam' in mesg_lower or 'old' in mesg_lower:
+            print("Blacklist message spotted : {}".format(mesg_lower))
+            return True
+    return False
+
 def getMediaMessages(messages):
     messages_out=[]
     for m in messages:
         #only photo media
+        if isBlacklistMessage(m):
+            continue
         if m.media and hasattr(m.media,'photo'):
+            #
+            if m.message:
+                continue
             print(m.date, m.id, m.media)
             messages_out.append(m)
     return messages_out
@@ -105,16 +120,16 @@ def filterSeenMessages(seen, messages_out):
             messages_out_unseen.append(mesg)
     return messages_out_unseen
 
-def sendMessage(cnt, sms_users):
+def sendMessage(cnt, ratio, sms_users):
     #only send if there are more than 1 message and its friendly time
     if TimeUtilities.isUSFriendlyTime():
         print("US friendly time")
-        TwilioSendTextMessage.sendSMS("There are " + str(cnt) + " messages, login and book VISA", sms_users)
+        TwilioSendTextMessage.sendSMS("There are {} messages, ratio:{}, login and book VISA, time:{} PST".format(cnt, round(ratio,1), TimeUtilities.getPSTTime()), sms_users)
 
     if TimeUtilities.isIndiaFriendlyTime():
         sms_users = VisaAppointmentConstants.india_sms_numbers
         print("India friendly time")
-        TwilioSendTextMessage.sendSMS("There are " + str(cnt) + " messages, login and book VISA", sms_users)
+        TwilioSendTextMessage.sendSMS("There are {} messages, ratio:{}, login and book VISA, time:{} PST".format(cnt, round(ratio,1),TimeUtilities.getPSTTime()), sms_users)
 
 result = client(GetDialogsRequest(
              offset_date=None,
@@ -130,14 +145,18 @@ entities = result.chats
 messages = get_entity_data(1371184682, 100)
 print("messages retrieved:", len(messages))
 seen= getSeenMessages()
+#added to avoid messaging multiple more than 5 times
+total_cnt = 0
 messages_out = getMediaMessages(messages)
 messages_out_unseen=filterSeenMessages(seen, messages_out)
+total_cnt = len(messages_out)
 message_type = []
 if len(messages_out_unseen)>0:
     message_type.append("media")
 
 messages_out+= getTextMessages(messages)
 messages_out_unseen1=filterSeenMessages(seen, messages_out)
+total_cnt += len(messages_out)
 if len(messages_out_unseen1)>0:
     message_type.append("text")
 
@@ -147,15 +166,17 @@ messages_out_unseen = messages_out_unseen + messages_out_unseen1
 cnt=len(messages_out_unseen)
 print("Filtered cnt:", cnt, [message.id for message in messages_out], [message.id for message in messages_out_unseen])
 
-user_ids=set([2065464808])
+user_ids=VisaAppointmentConstants.telegram_user_ids
 sms_users = VisaAppointmentConstants.us_sms_numbers
 #url to validate Pranoy/Chandni number https://console.twilio.com/us1/develop/phone-numbers/manage/verified?frameUrl=%2Fconsole%2Fphone-numbers%2Fverified%3FphoneNumberContains%3D4254948233%26friendlyNameContains%3DanotherOne%26__override_layout__%3Dembed%26bifrost%3Dtrue%26x-target-region%3Dus1
 if cnt>=1:
-    out_mesg = "{}: we have {} messages of type:{} and date is {}"
     if cnt>=3:
-        out_mesg = "{}: we have {} messages of type:{} and date is {}, do check Bulk Login Slots... ".format(message_src, cnt, ':'.join(message_type), messages_out_unseen[0].date)
+        ratio = cnt / total_cnt
+        out_mesg = "{}: we have {} messages of type:{}, ratio unseen/seen is {} and date is {}, do check Bulk Login Slots... ".format(message_src, cnt, ':'.join(message_type), round(ratio,1), messages_out_unseen[0].date)
         TelegramUtils.sendTelegramMessage(out_mesg, user_ids)
-        #sendMessage(cnt, sms_users)
+        if ratio>=0.6:
+            sendMessage = 1
+            #sendMessage(cnt, ratio, sms_users)
     else:
         out_mesg = "{}: we have {} messages of type:{} and date is {}, check Telegram Message channel - H1B/H4 Visa Dropbox slots( No Questions only slot availability messages".format(message_src, cnt, ':'.join(message_type), messages_out_unseen[0].date)
         TelegramUtils.sendTelegramMessage( out_mesg, user_ids)
@@ -165,5 +186,3 @@ if cnt>=1:
     # MessageUtils.sendTextMessage()
 else:
     logger.info("NOTHING to do HERE, sit and chill")
-
-
