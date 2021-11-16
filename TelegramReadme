@@ -1,0 +1,25 @@
+pip install telegram
+pip install telethon
+pip install python-telegram-bot --upgrade
+brew install watch
+pip install clx-sdk-xm #for sms, not needed as we are using Twilio
+pip install twilio
+
+
+#CRON
+# (base) cmaloo@tw-mbp-cmaloo ~ % crontab -e
+# crontab: installing new crontab
+# (base) cmaloo@tw-mbp-cmaloo ~ % crontab -l
+# */1 * * * * /Users/cmaloo/opt/anaconda3/bin/python /Users/cmaloo/PycharmProjects/PutsBackTest/TelegramMessagesForAChannelChat.py CRON >>/tmp/data.log 2>&1
+
+Make sure you set these in a file called VisaAppointmentConstants.py:
+
+telegram_bot_token
+telegram_api_id
+telegram_api_hash
+twilio_account_sid
+twilio_auth_token
+twilio_number
+us_sms_numbers
+us_sms_default_list
+india_sms_numbers
