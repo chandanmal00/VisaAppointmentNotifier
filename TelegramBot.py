@@ -5,6 +5,10 @@ import VisaAppointmentConstants
 import VisaAppointmentLogger
 logger = VisaAppointmentLogger.getLogger()
 
+###README
+#See how to create a bot: https://sendpulse.com/knowledge-base/chatbot/create-telegram-chatbot
+##you need to work within telegram app: Enter @Botfather in the search tab and choose this bot.
+
 bot = telegram.Bot(token=VisaAppointmentConstants.telegram_bot_token)
 def sendMessageFromBot(user_ids):
     for id in user_ids:
