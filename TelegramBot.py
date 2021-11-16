@@ -2,23 +2,22 @@ import json
 import logging
 import telegram
 import VisaAppointmentConstants
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
-
-
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+import VisaAppointmentLogger
+logger = VisaAppointmentLogger.getLogger()
 
 bot = telegram.Bot(token=VisaAppointmentConstants.telegram_bot_token)
+def sendMessageFromBot(user_ids):
+    for id in user_ids:
+        bot.send_message(id, "how are you")
 
-updates = bot.getUpdates()
-user_ids=set([2065464808])
-for u in updates:
-    id= u['message']['chat']['id']
-    user_ids.add(id)
-    print(id)
-    #print(json_data)
+def getUpdatesToBotMessages():
+    updates = bot.getUpdates()
+    user_ids=VisaAppointmentConstants.telegram_user_ids
+    for u in updates:
+        id= u['message']['chat']['id']
+        user_ids.add(id)
+        logger.info("Userid to add: {}".format(id))
 
-for id in user_ids:
-    bot.send_message(id, "how are you")
+if __name__ == '__main__':
+    getUpdatesToBotMessages()
+

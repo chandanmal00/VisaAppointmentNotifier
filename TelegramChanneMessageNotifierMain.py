@@ -11,13 +11,9 @@ from telethon.tl.types import InputPeerEmpty
 from telethon.tl.functions.messages import GetDialogsRequest
 import sys
 import VisaAppointmentConstants
+import VisaAppointmentLogger
 
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-
+logger = VisaAppointmentLogger.getLogger()
 message_src = None
 if len(sys.argv)>=2:
     message_src = "From here:" + sys.argv[1]
@@ -37,7 +33,7 @@ def getAllMessages(messages):
     mess={}
     for m in messages:
         mess[m.id] = m
-        print(m.date, m.id, m.message)
+        logger.debug("date:{}, id: {}, message:{}".format(m.date, m.id, m.message))
     return mess
 
 def getTextMessages(messages):
@@ -50,7 +46,7 @@ def getTextMessages(messages):
             if '?' in m.message or len(m.message)>=20:
                 continue
             if 'ss' in m.message.lower() or 'available' in m.message.lower() or 'bulk' in m.message.lower():
-                print(m.date, m.id, m.message)
+                logger.info("date:{}, id: {}, message:{}".format(m.date, m.id, m.message))
                 out.append(m)
     return out
 
@@ -58,7 +54,7 @@ def isBlacklistMessage(message):
     if message.message:
         mesg_lower = message.message.lower()
         if 'fake' in mesg_lower or 'spam' in mesg_lower or 'old' in mesg_lower:
-            print("Blacklist message spotted : {}".format(mesg_lower))
+            logger.debug("Blacklist message spotted : {}".format(mesg_lower))
             return True
     return False
 
@@ -72,7 +68,7 @@ def getMediaMessages(messages):
             #
             if m.message:
                 continue
-            print(m.date, m.id, m.media)
+            logger.info("date:{}, id: {}, message:{}".format(m.date, m.id, m.message))
             messages_out.append(m)
     return messages_out
 
@@ -98,7 +94,7 @@ def writeMessagesToFile(messages_out):
 
 def getSeenMessages():
     out = TelegramLocalMessageStore.readFilePrintMessages()
-    print("Seen is", out)
+    logger.debug("Seen is {}".format(out))
     return out
 
 def getEntityMessgaes(entities, last_no_message):
@@ -106,14 +102,13 @@ def getEntityMessgaes(entities, last_no_message):
         title = entity.title
         id = entity.id
         messages = get_entity_data(entity.id, last_no_message)
-        print(title + ' :' + str(id))
-        print(messages)
-        print('#######')
+        logger.info("title:{}, id:{}".format(title, str(id)))
+        logger.info("messages: {}".format(messages))
 
 def filterSeenMessages(seen, messages_out):
     messages_out_unseen = []
     for mesg in messages_out:
-        print(mesg.id, seen)
+        logger.info("id:{}, seen:{}".format(mesg.id, seen))
         if mesg.id in seen or str(mesg.id) in seen:
             continue
         else:
@@ -121,14 +116,14 @@ def filterSeenMessages(seen, messages_out):
     return messages_out_unseen
 
 def sendMessage(cnt, ratio, sms_users):
-    #only send if there are more than 1 message and its friendly time
+    #only send if there are more than 1 message and users friendly time
     if TimeUtilities.isUSFriendlyTime():
-        print("US friendly time")
+        logger.info("US friendly time")
         TwilioSendTextMessage.sendSMS("There are {} messages, ratio:{}, login and book VISA, time:{} PST".format(cnt, round(ratio,1), TimeUtilities.getPSTTime()), sms_users)
 
     if TimeUtilities.isIndiaFriendlyTime():
         sms_users = VisaAppointmentConstants.india_sms_numbers
-        print("India friendly time")
+        logger.info("India friendly time")
         TwilioSendTextMessage.sendSMS("There are {} messages, ratio:{}, login and book VISA, time:{} PST".format(cnt, round(ratio,1),TimeUtilities.getPSTTime()), sms_users)
 
 result = client(GetDialogsRequest(
@@ -143,7 +138,7 @@ entities = result.chats
 
 ##mesages from a specific entity, it only returns last 100 messages
 messages = get_entity_data(1371184682, 100)
-print("messages retrieved:", len(messages))
+logger.info("messages retrieved: {}".format(len(messages)))
 seen= getSeenMessages()
 #added to avoid messaging multiple more than 5 times
 total_cnt = 0
@@ -157,14 +152,14 @@ if len(messages_out_unseen)>0:
 messages_out+= getTextMessages(messages)
 messages_out_unseen1=filterSeenMessages(seen, messages_out)
 total_cnt += len(messages_out)
-if len(messages_out_unseen1)>0:
+if len(messages_out_unseen1) > 0:
     message_type.append("text")
 
 messages_out_unseen = messages_out_unseen + messages_out_unseen1
 
 
-cnt=len(messages_out_unseen)
-print("Filtered cnt:", cnt, [message.id for message in messages_out], [message.id for message in messages_out_unseen])
+cnt = len(messages_out_unseen)
+logger.info("Filtered cnt:{}, total:{}, out:{}, unseen:{}".format(cnt, total_cnt, [message.id for message in messages_out], [message.id for message in messages_out_unseen]))
 
 user_ids=VisaAppointmentConstants.telegram_user_ids
 sms_users = VisaAppointmentConstants.us_sms_numbers
@@ -172,11 +167,12 @@ sms_users = VisaAppointmentConstants.us_sms_numbers
 if cnt>=1:
     if cnt>=3:
         ratio = cnt / total_cnt
-        out_mesg = "{}: we have {} messages of type:{}, ratio unseen/seen is {} and date is {}, do check Bulk Login Slots... ".format(message_src, cnt, ':'.join(message_type), round(ratio,1), messages_out_unseen[0].date)
+        out_mesg = "⭐⭐ IMP, Potential Bulk appointment ⭐⭐: {}: we have {} messages of type:{}, ratio unseen/seen is {} and date is {}, do check Bulk Login Slots... ".format(message_src, cnt, ':'.join(message_type), round(ratio,1), messages_out_unseen[0].date)
         TelegramUtils.sendTelegramMessage(out_mesg, user_ids)
-        if ratio>=0.6:
-            sendMessage = 1
-            #sendMessage(cnt, ratio, sms_users)
+        #added this so we do not get bombarded in the interim if the latest messages all are for same event
+        if ratio >= 0.6:
+            sendMesgCounter = 1 #nnot user right now
+            sendMessage(cnt, ratio, sms_users)
     else:
         out_mesg = "{}: we have {} messages of type:{} and date is {}, check Telegram Message channel - H1B/H4 Visa Dropbox slots( No Questions only slot availability messages".format(message_src, cnt, ':'.join(message_type), messages_out_unseen[0].date)
         TelegramUtils.sendTelegramMessage( out_mesg, user_ids)
@@ -186,3 +182,5 @@ if cnt>=1:
     # MessageUtils.sendTextMessage()
 else:
     logger.info("NOTHING to do HERE, sit and chill")
+
+

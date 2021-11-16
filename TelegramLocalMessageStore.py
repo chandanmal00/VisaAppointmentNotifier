@@ -1,5 +1,7 @@
 import os.path
+import VisaAppointmentLogger
 
+logger = VisaAppointmentLogger.getLogger()
 filename = "/tmp/stored_message.data"
 
 def readFilePrintMessages():
@@ -18,10 +20,10 @@ def  writeMessageToFile(messages):
     #we want to open in append mode, so we can add to the file
     fw = open(filename, "a")
     for message in messages:
-        print("Writing message:", message.id)
+        logger.info("Writing message: {}".format(message.id))
         if message.id in out:
             continue
-        print("Wrote message:" , message.id)
+        logger.info("Wrote message: {}".format(message.id))
         fw.write(str(message.id)+"\n")
         out.add(message.id)
 
