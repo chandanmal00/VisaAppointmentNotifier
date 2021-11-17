@@ -47,7 +47,7 @@ def getTextMessages(messages):
             mesg_lower = m.message.lower()
             for keyword_good in VisaAppointmentConstants.LIST_MESSAGES_KEYWORDS_GOOD:
                 if keyword_good in mesg_lower:
-                    logger.info("date:{}, id: {}, message:{}".format(m.date, m.id, m.message))
+                    logger.info("date:{}, id: {}, message:{}, type:text".format(m.date, m.id, m.message))
                     out.append(m)
                     break
     return out
@@ -56,11 +56,11 @@ def ignoreNotRelevantMessages(message):
     if message.message:
         mesg_lower = message.message.lower()
         if len(mesg_lower) >= MESSAGE_ABOVE_LEN_IGNORE:
-            logger.info("ignoreNotRelevantMessages message spotted(reduced to 30 chars) : {}, isMediaMessage: {}".format(mesg_lower[:MESSAGE_ABOVE_LEN_IGNORE].replace("\n", ""), True if message.media else False))
+            logger.debug("ignoreNotRelevantMessages message spotted(reduced to 30 chars) : {}, isMediaMessage: {}".format(mesg_lower[:MESSAGE_ABOVE_LEN_IGNORE].replace("\n", ""), True if message.media else False))
             return True
         for ignore_mesg_keyword in VisaAppointmentConstants.LIST_MESSAGES_KEYWORDS_IGNORE:
             if ignore_mesg_keyword in mesg_lower:
-                logger.info("ignoreNotRelevantMessages message spotted: {}, isMediaMessage: {}".format(mesg_lower.replace("\n",""), True if message.media else False ))
+                logger.debug("ignoreNotRelevantMessages message spotted: {}, isMediaMessage: {}".format(mesg_lower.replace("\n",""), True if message.media else False ))
                 return True
     return False
 
@@ -74,7 +74,7 @@ def getMediaMessages(messages):
         if m.media and hasattr(m.media,'photo'):
             if m.message:
                 continue
-            logger.info("date:{}, id: {}, message:{}".format(m.date, m.id, m.message))
+            logger.info("date:{}, id: {}, message:{}, type:media".format(m.date, m.id, m.message))
             messages_out.append(m)
     return messages_out
 
@@ -114,7 +114,7 @@ def getEntityMessgaes(entities, last_no_message):
 def filterSeenMessages(seen, messages_out):
     messages_out_unseen = []
     for mesg in messages_out:
-        logger.info("id:{}, seen:{}".format(mesg.id, seen))
+        logger.debug("id:{}, seen:{}".format(mesg.id, seen))
         if mesg.id in seen or str(mesg.id) in seen:
             continue
         else:
@@ -145,7 +145,7 @@ entities = result.chats
 
 ##mesages from a specific entity, it only returns last 100 messages
 messages = getEntityData(1371184682, 100)
-logger.info("messages retrieved: {}".format(len(messages)))
+logger.debug("messages retrieved: {}".format(len(messages)))
 seen= getSeenMessages()
 #added to avoid messaging multiple more than 5 times
 total_cnt = 0
@@ -167,14 +167,14 @@ messages_out_unseen = messages_out_unseen + messages_out_unseen1
 cnt = len(messages_out_unseen)
 logger.info("Filtered cnt:{}, total:{}, out:{}, unseen:{}".format(cnt, total_cnt, [message.id for message in messages_out], [message.id for message in messages_out_unseen]))
 
-user_ids=VisaAppointmentSecrets.telegram_user_ids
+telegram_user_ids=VisaAppointmentSecrets.telegram_user_ids
 sms_users = VisaAppointmentSecrets.us_sms_numbers
 #url to validate Pranoy/Chandni number https://console.twilio.com/us1/develop/phone-numbers/manage/verified?frameUrl=%2Fconsole%2Fphone-numbers%2Fverified%3FphoneNumberContains%3D4254948233%26friendlyNameContains%3DanotherOne%26__override_layout__%3Dembed%26bifrost%3Dtrue%26x-target-region%3Dus1
 if cnt>=1:
     if cnt>=3:
         ratio = cnt / total_cnt
         out_mesg = "⭐⭐IMP, Potential Bulk appointment⭐⭐: {}: we have {} new messages of type:{}, ratio unseen/seen is {} and date is {}, do check Bulk Login Slots... ".format(message_src, cnt, ':'.join(message_type), round(ratio,1), messages_out_unseen[0].date)
-        TelegramUtils.sendTelegramMessage(out_mesg, user_ids)
+        TelegramUtils.sendTelegramMessage(out_mesg, telegram_user_ids)
         #added this so we do not get bombarded in the interim if the latest messages all are for same event
         if ratio >= 0.6 or ( cnt>=6 and ratio>=0.4 ):
             logger.info("Potential Bulk appointment, Sending text message for {} new messages, ratio:{}".format(cnt, ratio))
@@ -184,7 +184,7 @@ if cnt>=1:
             logger.info("Skipping sending text message for cnt:{}, ratio:{}".format(cnt, ratio))
     else:
         out_mesg = "{}: we have {} new messages of type:{} and date is {}, check Telegram Message channel - *H1B/H4 Visa Dropbox slots( No Questions only slot availability messages)*".format(message_src, cnt, ':'.join(message_type), messages_out_unseen[0].date)
-        TelegramUtils.sendTelegramMessage( out_mesg, user_ids)
+        TelegramUtils.sendTelegramMessage(out_mesg, telegram_user_ids)
 
     writeMessagesToFile(messages_out_unseen)
     # https://dashboard.sinch.com/sms/api/rest  need to us api, https://www.geeksforgeeks.org/send-sms-updates-mobile-phone-using-python/

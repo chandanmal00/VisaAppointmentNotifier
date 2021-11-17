@@ -36,4 +36,12 @@ india_sms_numbers
 Keep the last 40 entries in logs for stored messages:
 * 0 * * * /usr/bin/tail -40 /tmp/stored_message.data > /tmp/stored_message.data1 && /bin/mv /tmp/stored_message.data1 /tmp/stored_message.data
 
-We trick my setting the CWD to '/tmp' and running one manual run of CRON so that session directory is created.
+We trick by setting the CWD to '/tmp' and running one manual run of CRON so that session directory is created.
+
+#updated crons
+* * * * * cd /Users/cmaloo/visa_cookie; /Users/cmaloo/opt/anaconda3/bin/python /Users/cmaloo/PycharmProjects/PutsBackTest/VisaAppointmentsNotifier/TelegramChanneMessageNotifierMain.py CRON >>/tmp/data.log 2>&1
+* * * * * sleep 15 && cd /Users/cmaloo/visa_cookie; /Users/cmaloo/opt/anaconda3/bin/python /Users/cmaloo/PycharmProjects/PutsBackTest/VisaAppointmentsNotifier/TelegramChanneMessageNotifierMain.py CRON >>/tmp/data.log 2>&1
+* * * * * sleep 30 && cd /Users/cmaloo/visa_cookie; /Users/cmaloo/opt/anaconda3/bin/python /Users/cmaloo/PycharmProjects/PutsBackTest/VisaAppointmentsNotifier/TelegramChanneMessageNotifierMain.py CRON >>/tmp/data.log 2>&1
+* * * * * sleep 40 && cd /Users/cmaloo/visa_cookie; /Users/cmaloo/opt/anaconda3/bin/python /Users/cmaloo/PycharmProjects/PutsBackTest/VisaAppointmentsNotifier/TelegramChanneMessageNotifierMain.py CRON >>/tmp/data.log 2>&1
+* 0 * * * sleep 4 && /usr/bin/tail -40 /tmp/stored_message.data > /tmp/stored_message.data1 && /bin/mv /tmp/stored_message.data1 /tmp/stored_message.data
+* 0 * * * sleep 4 && /bin/cp /tmp/data.log /tmp/data.log.`date +20\%y\%m\%d` && /usr/bin/tail -40 /tmp/data.log > /tmp/data1.log && /bin/mv /tmp/data1.log /tmp/data.log
