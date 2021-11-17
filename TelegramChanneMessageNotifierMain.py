@@ -53,8 +53,8 @@ def getTextMessages(messages):
 def ignoreNotRelevantMessages(message):
     if message.message:
         mesg_lower = message.message.lower()
-        if 'fake' in mesg_lower or 'spam' in mesg_lower or 'old' in mesg_lower or 'please' in mesg_lower or 'sorry' in mesg_lower:
-            logger.debug("ignoreNotRelevantMessages message spotted : {}".format(mesg_lower))
+        if len(mesg_lower)>=30 or 'fake' in mesg_lower or 'spam' in mesg_lower or 'old' in mesg_lower or 'please' in mesg_lower or 'sorry' in mesg_lower:
+            logger.info("ignoreNotRelevantMessages message spotted(reduced to 30 chars) : {}, isMediaMessage: {}".format(mesg_lower[:30].replace("\n",""), True if message.media else False ))
             return True
     return False
 
@@ -119,12 +119,12 @@ def sendMessage(cnt, ratio, sms_users):
     #only send if there are more than 1 message and users friendly time
     if TimeUtilities.isUSFriendlyTime():
         logger.info("US friendly time")
-        TwilioSendTextMessage.sendSMS("There are {} messages, ratio:{}, login and book VISA, time:{} PST".format(cnt, round(ratio,1), TimeUtilities.getPSTTime()), sms_users)
+        TwilioSendTextMessage.sendSMS("⭐BulkAppointment⭐ There are {} messages, ratio:{}, login and book VISA, time:{} PST".format(cnt, round(ratio,1), TimeUtilities.getPSTTime()), sms_users)
 
     if TimeUtilities.isIndiaFriendlyTime():
         sms_users = VisaAppointmentConstants.india_sms_numbers
         logger.info("India friendly time")
-        TwilioSendTextMessage.sendSMS("There are {} messages, ratio:{}, login and book VISA, time:{} PST".format(cnt, round(ratio,1),TimeUtilities.getPSTTime()), sms_users)
+        TwilioSendTextMessage.sendSMS("⭐BulkAppointment⭐ There are {} messages, ratio:{}, login and book VISA, time:{} PST".format(cnt, round(ratio,1),TimeUtilities.getPSTTime()), sms_users)
 
 ###This is super important for the utility to work, do not delete the lines below
 result = client(GetDialogsRequest(
