@@ -44,12 +44,12 @@ def getTextMessages(messages):
         if ignoreNotRelevantMessages(m):
             continue
         if not m.media:
-            #ignore messages with ? mark and big messages too
-            if len(m.message)>=20:
-                continue
-            if 'ss' in m.message.lower() or 'available' in m.message.lower() or 'bulk' in m.message.lower():
-                logger.info("date:{}, id: {}, message:{}".format(m.date, m.id, m.message))
-                out.append(m)
+            mesg_lower = m.message.lower()
+            for keyword_good in VisaAppointmentConstants.LIST_MESSAGES_KEYWORDS_GOOD:
+                if keyword_good in mesg_lower:
+                    logger.info("date:{}, id: {}, message:{}".format(m.date, m.id, m.message))
+                    out.append(m)
+                    break
     return out
 
 def ignoreNotRelevantMessages(message):
@@ -58,8 +58,8 @@ def ignoreNotRelevantMessages(message):
         if len(mesg_lower) >= MESSAGE_ABOVE_LEN_IGNORE:
             logger.info("ignoreNotRelevantMessages message spotted(reduced to 30 chars) : {}, isMediaMessage: {}".format(mesg_lower[:MESSAGE_ABOVE_LEN_IGNORE].replace("\n", ""), True if message.media else False))
             return True
-        for ignore_mesg in VisaAppointmentConstants.LIST_MESSAGES_KEYWORDS_IGNORE:
-            if ignore_mesg in mesg_lower:
+        for ignore_mesg_keyword in VisaAppointmentConstants.LIST_MESSAGES_KEYWORDS_IGNORE:
+            if ignore_mesg_keyword in mesg_lower:
                 logger.info("ignoreNotRelevantMessages message spotted: {}, isMediaMessage: {}".format(mesg_lower.replace("\n",""), True if message.media else False ))
                 return True
     return False
