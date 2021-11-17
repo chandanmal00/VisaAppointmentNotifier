@@ -10,6 +10,7 @@ from telethon.tl.functions.messages import GetHistoryRequest
 from telethon.tl.types import InputPeerEmpty
 from telethon.tl.functions.messages import GetDialogsRequest
 import sys
+import VisaAppointmentSecrets
 import VisaAppointmentConstants
 import VisaAppointmentLogger
 
@@ -24,8 +25,8 @@ if message_src is None:
 logger.info("--"*15)
 logger.info('Run started...')
 
-api_id = VisaAppointmentConstants.telegram_api_id
-api_hash = VisaAppointmentConstants.telegram_api_hash
+api_id = VisaAppointmentSecrets.telegram_api_id
+api_hash = VisaAppointmentSecrets.telegram_api_hash
 
 client = TelegramClient('session_name1', api_id, api_hash)
 client.start()
@@ -44,7 +45,7 @@ def getTextMessages(messages):
             continue
         if not m.media:
             #ignore messages with ? mark and big messages too
-            if '?' in m.message or len(m.message)>=20:
+            if len(m.message)>=20:
                 continue
             if 'ss' in m.message.lower() or 'available' in m.message.lower() or 'bulk' in m.message.lower():
                 logger.info("date:{}, id: {}, message:{}".format(m.date, m.id, m.message))
@@ -54,12 +55,13 @@ def getTextMessages(messages):
 def ignoreNotRelevantMessages(message):
     if message.message:
         mesg_lower = message.message.lower()
-        if len(mesg_lower) >= MESSAGE_ABOVE_LEN_IGNORE or '?' in mesg_lower:
-            logger.info("ignoreNotRelevantMessages message spotted(reduced to 30 chars) : {}, isMediaMessage: {}".format(mesg_lower[:30].replace("\n", ""), True if message.media else False))
+        if len(mesg_lower) >= MESSAGE_ABOVE_LEN_IGNORE:
+            logger.info("ignoreNotRelevantMessages message spotted(reduced to 30 chars) : {}, isMediaMessage: {}".format(mesg_lower[:MESSAGE_ABOVE_LEN_IGNORE].replace("\n", ""), True if message.media else False))
             return True
-        if 'vac' in mesg_lower or 'fake' in mesg_lower or 'spam' in mesg_lower or 'old' in mesg_lower or 'please' in mesg_lower or 'sorry' in mesg_lower:
-            logger.info("ignoreNotRelevantMessages message spotted: {}, isMediaMessage: {}".format(mesg_lower.replace("\n",""), True if message.media else False ))
-            return True
+        for ignore_mesg in VisaAppointmentConstants.LIST_MESSAGES_KEYWORDS_IGNORE:
+            if ignore_mesg in mesg_lower:
+                logger.info("ignoreNotRelevantMessages message spotted: {}, isMediaMessage: {}".format(mesg_lower.replace("\n",""), True if message.media else False ))
+                return True
     return False
 
 def getMediaMessages(messages):
@@ -126,7 +128,7 @@ def sendMessage(cnt, ratio, sms_users):
         TwilioSendTextMessage.sendSMS("⭐BulkAppointment⭐ There are {} messages, ratio:{}, login and book VISA, time:{} PST".format(cnt, round(ratio,1), TimeUtilities.getPSTTime()), sms_users)
 
     if TimeUtilities.isIndiaFriendlyTime():
-        sms_users = VisaAppointmentConstants.india_sms_numbers
+        sms_users = VisaAppointmentSecrets.india_sms_numbers
         logger.info("India friendly time")
         TwilioSendTextMessage.sendSMS("⭐BulkAppointment⭐ There are {} messages, ratio:{}, login and book VISA, time:{} PST".format(cnt, round(ratio,1),TimeUtilities.getPSTTime()), sms_users)
 
@@ -165,8 +167,8 @@ messages_out_unseen = messages_out_unseen + messages_out_unseen1
 cnt = len(messages_out_unseen)
 logger.info("Filtered cnt:{}, total:{}, out:{}, unseen:{}".format(cnt, total_cnt, [message.id for message in messages_out], [message.id for message in messages_out_unseen]))
 
-user_ids=VisaAppointmentConstants.telegram_user_ids
-sms_users = VisaAppointmentConstants.us_sms_numbers
+user_ids=VisaAppointmentSecrets.telegram_user_ids
+sms_users = VisaAppointmentSecrets.us_sms_numbers
 #url to validate Pranoy/Chandni number https://console.twilio.com/us1/develop/phone-numbers/manage/verified?frameUrl=%2Fconsole%2Fphone-numbers%2Fverified%3FphoneNumberContains%3D4254948233%26friendlyNameContains%3DanotherOne%26__override_layout__%3Dembed%26bifrost%3Dtrue%26x-target-region%3Dus1
 if cnt>=1:
     if cnt>=3:
@@ -189,4 +191,5 @@ if cnt>=1:
     # MessageUtils.sendTextMessage()
 else:
     logger.info("NOTHING to do HERE, sit and chill")
+
 
