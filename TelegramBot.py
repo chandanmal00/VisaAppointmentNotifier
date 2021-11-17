@@ -24,4 +24,3 @@ def getUpdatesToBotMessages():
 
 if __name__ == '__main__':
     getUpdatesToBotMessages()
-

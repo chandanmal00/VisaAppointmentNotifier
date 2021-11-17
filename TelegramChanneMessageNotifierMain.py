@@ -39,7 +39,7 @@ def getAllMessages(messages):
 def getTextMessages(messages):
     out=[]
     for m in messages:
-        if isBlacklistMessage(m):
+        if ignoreNotRelevantMessages(m):
             continue
         if not m.media:
             #ignore messages with ? mark and big messages too
@@ -50,29 +50,29 @@ def getTextMessages(messages):
                 out.append(m)
     return out
 
-def isBlacklistMessage(message):
+def ignoreNotRelevantMessages(message):
     if message.message:
         mesg_lower = message.message.lower()
-        if 'fake' in mesg_lower or 'spam' in mesg_lower or 'old' in mesg_lower:
-            logger.debug("Blacklist message spotted : {}".format(mesg_lower))
+        if 'fake' in mesg_lower or 'spam' in mesg_lower or 'old' in mesg_lower or 'please' in mesg_lower or 'sorry' in mesg_lower:
+            logger.debug("ignoreNotRelevantMessages message spotted : {}".format(mesg_lower))
             return True
     return False
 
 def getMediaMessages(messages):
     messages_out=[]
     for m in messages:
-        #only photo media
-        if isBlacklistMessage(m):
+        #ignore non-relevant messages
+        if ignoreNotRelevantMessages(m):
             continue
+        # only photo media
         if m.media and hasattr(m.media,'photo'):
-            #
             if m.message:
                 continue
             logger.info("date:{}, id: {}, message:{}".format(m.date, m.id, m.message))
             messages_out.append(m)
     return messages_out
 
-def get_entity_data(entity_id, limit):
+def getEntityData(entity_id, limit):
     entity = client.get_entity(entity_id)
     today = datetime.datetime.today()
     posts = client(GetHistoryRequest(
@@ -101,7 +101,7 @@ def getEntityMessgaes(entities, last_no_message):
     for entity in entities:
         title = entity.title
         id = entity.id
-        messages = get_entity_data(entity.id, last_no_message)
+        messages = getEntityData(entity.id, last_no_message)
         logger.info("title:{}, id:{}".format(title, str(id)))
         logger.info("messages: {}".format(messages))
 
@@ -126,6 +126,7 @@ def sendMessage(cnt, ratio, sms_users):
         logger.info("India friendly time")
         TwilioSendTextMessage.sendSMS("There are {} messages, ratio:{}, login and book VISA, time:{} PST".format(cnt, round(ratio,1),TimeUtilities.getPSTTime()), sms_users)
 
+###This is super important for the utility to work, do not delete the lines below
 result = client(GetDialogsRequest(
              offset_date=None,
              offset_id=0,
@@ -137,7 +138,7 @@ entities = result.chats
 #getEntityMessgaes(100)
 
 ##mesages from a specific entity, it only returns last 100 messages
-messages = get_entity_data(1371184682, 100)
+messages = getEntityData(1371184682, 100)
 logger.info("messages retrieved: {}".format(len(messages)))
 seen= getSeenMessages()
 #added to avoid messaging multiple more than 5 times
@@ -157,7 +158,6 @@ if len(messages_out_unseen1) > 0:
 
 messages_out_unseen = messages_out_unseen + messages_out_unseen1
 
-
 cnt = len(messages_out_unseen)
 logger.info("Filtered cnt:{}, total:{}, out:{}, unseen:{}".format(cnt, total_cnt, [message.id for message in messages_out], [message.id for message in messages_out_unseen]))
 
@@ -167,12 +167,15 @@ sms_users = VisaAppointmentConstants.us_sms_numbers
 if cnt>=1:
     if cnt>=3:
         ratio = cnt / total_cnt
-        out_mesg = "⭐⭐ IMP, Potential Bulk appointment ⭐⭐: {}: we have {} messages of type:{}, ratio unseen/seen is {} and date is {}, do check Bulk Login Slots... ".format(message_src, cnt, ':'.join(message_type), round(ratio,1), messages_out_unseen[0].date)
+        out_mesg = "⭐⭐IMP, Potential Bulk appointment⭐⭐: {}: we have {} messages of type:{}, ratio unseen/seen is {} and date is {}, do check Bulk Login Slots... ".format(message_src, cnt, ':'.join(message_type), round(ratio,1), messages_out_unseen[0].date)
         TelegramUtils.sendTelegramMessage(out_mesg, user_ids)
         #added this so we do not get bombarded in the interim if the latest messages all are for same event
         if ratio >= 0.6:
-            sendMesgCounter = 1 #nnot user right now
+            logger.info("Potential Bulk appointment, Sending text message for cnt:{}, ratio:{}".format(cnt, ratio))
+            sendMesgCounter = 1 #not used right now
             sendMessage(cnt, ratio, sms_users)
+        else:
+            logger.info("Skipping sending text message for cnt:{}, ratio:{}".format(cnt, ratio))
     else:
         out_mesg = "{}: we have {} messages of type:{} and date is {}, check Telegram Message channel - H1B/H4 Visa Dropbox slots( No Questions only slot availability messages".format(message_src, cnt, ':'.join(message_type), messages_out_unseen[0].date)
         TelegramUtils.sendTelegramMessage( out_mesg, user_ids)

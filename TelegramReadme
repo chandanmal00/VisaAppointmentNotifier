@@ -27,7 +27,13 @@ india_sms_numbers
 
 #Telegram stores a session file in a dir where the application runs, for CRON to work we need the sessions directory there
 #its an initial step to get messages witout asking for authentication again and again on phone
-*/1 * * * * cd /tmp; /Users/cmaloo/opt/anaconda3/bin/python /Users/cmaloo/PycharmProjects/PutsBackTest/VisaAppointmentsNotifier/TelegramChanneMessageNotifierMain.py CRON >>/tmp/data.log 2>&1
+#runs every min
+* * * * * cd /tmp; /Users/cmaloo/opt/anaconda3/bin/python /Users/cmaloo/PycharmProjects/PutsBackTest/VisaAppointmentsNotifier/TelegramChanneMessageNotifierMain.py CRON >>/tmp/data.log 2>&1
+#runs every min + 30 sec
 * * * * * sleep 30 && cd /tmp; /Users/cmaloo/opt/anaconda3/bin/python /Users/cmaloo/PycharmProjects/PutsBackTest/VisaAppointmentsNotifier/TelegramChanneMessageNotifierMain.py CRON >>/tmp/data.log 2>&1
+/tmp/stored_message.data1
+
+Keep the last 40 entries in logs for stored messages:
+* 0 * * * /usr/bin/tail -40 /tmp/stored_message.data > /tmp/stored_message.data1 && /bin/mv /tmp/stored_message.data1 /tmp/stored_message.data
 
 We trick my setting the CWD to '/tmp' and running one manual run of CRON so that session directory is created.
