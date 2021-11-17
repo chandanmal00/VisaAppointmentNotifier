@@ -7,11 +7,9 @@ logging.basicConfig(level=logging.DEBUG, stream=sys.stdout,
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-for logger_names_skip in ['telethon.network', 'telethon.crypto']:
-    log = logging.getLogger(logger_names_skip)
+for logger_name_skip in ['telethon.network', 'telethon.crypto']:
+    log = logging.getLogger(logger_name_skip)
     log.setLevel(logging.WARN)
 
 def getLogger():
     return logger
-
-
