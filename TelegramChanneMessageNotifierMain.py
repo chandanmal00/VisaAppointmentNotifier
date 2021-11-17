@@ -14,6 +14,7 @@ import VisaAppointmentConstants
 import VisaAppointmentLogger
 
 logger = VisaAppointmentLogger.getLogger()
+MESSAGE_ABOVE_LEN_IGNORE = 30
 message_src = None
 if len(sys.argv)>=2:
     message_src = "From here:" + sys.argv[1]
@@ -53,8 +54,11 @@ def getTextMessages(messages):
 def ignoreNotRelevantMessages(message):
     if message.message:
         mesg_lower = message.message.lower()
-        if len(mesg_lower)>=30 or 'fake' in mesg_lower or 'spam' in mesg_lower or 'old' in mesg_lower or 'please' in mesg_lower or 'sorry' in mesg_lower:
-            logger.info("ignoreNotRelevantMessages message spotted(reduced to 30 chars) : {}, isMediaMessage: {}".format(mesg_lower[:30].replace("\n",""), True if message.media else False ))
+        if len(mesg_lower) >= MESSAGE_ABOVE_LEN_IGNORE or '?' in mesg_lower:
+            logger.info("ignoreNotRelevantMessages message spotted(reduced to 30 chars) : {}, isMediaMessage: {}".format(mesg_lower[:30].replace("\n", ""), True if message.media else False))
+            return True
+        if 'vac' in mesg_lower or 'fake' in mesg_lower or 'spam' in mesg_lower or 'old' in mesg_lower or 'please' in mesg_lower or 'sorry' in mesg_lower:
+            logger.info("ignoreNotRelevantMessages message spotted: {}, isMediaMessage: {}".format(mesg_lower.replace("\n",""), True if message.media else False ))
             return True
     return False
 
@@ -167,17 +171,17 @@ sms_users = VisaAppointmentConstants.us_sms_numbers
 if cnt>=1:
     if cnt>=3:
         ratio = cnt / total_cnt
-        out_mesg = "⭐⭐IMP, Potential Bulk appointment⭐⭐: {}: we have {} messages of type:{}, ratio unseen/seen is {} and date is {}, do check Bulk Login Slots... ".format(message_src, cnt, ':'.join(message_type), round(ratio,1), messages_out_unseen[0].date)
+        out_mesg = "⭐⭐IMP, Potential Bulk appointment⭐⭐: {}: we have {} new messages of type:{}, ratio unseen/seen is {} and date is {}, do check Bulk Login Slots... ".format(message_src, cnt, ':'.join(message_type), round(ratio,1), messages_out_unseen[0].date)
         TelegramUtils.sendTelegramMessage(out_mesg, user_ids)
         #added this so we do not get bombarded in the interim if the latest messages all are for same event
-        if ratio >= 0.6:
-            logger.info("Potential Bulk appointment, Sending text message for cnt:{}, ratio:{}".format(cnt, ratio))
+        if ratio >= 0.6 or ( cnt>=6 and ratio>=0.4 ):
+            logger.info("Potential Bulk appointment, Sending text message for {} new messages, ratio:{}".format(cnt, ratio))
             sendMesgCounter = 1 #not used right now
             sendMessage(cnt, ratio, sms_users)
         else:
             logger.info("Skipping sending text message for cnt:{}, ratio:{}".format(cnt, ratio))
     else:
-        out_mesg = "{}: we have {} messages of type:{} and date is {}, check Telegram Message channel - H1B/H4 Visa Dropbox slots( No Questions only slot availability messages".format(message_src, cnt, ':'.join(message_type), messages_out_unseen[0].date)
+        out_mesg = "{}: we have {} new messages of type:{} and date is {}, check Telegram Message channel - *H1B/H4 Visa Dropbox slots( No Questions only slot availability messages)*".format(message_src, cnt, ':'.join(message_type), messages_out_unseen[0].date)
         TelegramUtils.sendTelegramMessage( out_mesg, user_ids)
 
     writeMessagesToFile(messages_out_unseen)
@@ -185,5 +189,4 @@ if cnt>=1:
     # MessageUtils.sendTextMessage()
 else:
     logger.info("NOTHING to do HERE, sit and chill")
-
 
