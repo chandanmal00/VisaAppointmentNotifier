@@ -71,10 +71,8 @@ def getMediaMessages(messages):
         if ignoreNotRelevantMessages(m):
             continue
         # only photo media
-        if m.media and hasattr(m.media,'photo'):
-            if m.message:
-                continue
-            logger.info("date:{}, id: {}, message:{}, type:media".format(m.date, m.id, m.message))
+        if m.media and hasattr(m.media, 'photo'):
+            logger.debug("date:{}, id: {}, message:{}, type:media".format(m.date, m.id, m.message))
             messages_out.append(m)
     return messages_out
 
@@ -114,10 +112,11 @@ def getEntityMessgaes(entities, last_no_message):
 def filterSeenMessages(seen, messages_out):
     messages_out_unseen = []
     for mesg in messages_out:
-        logger.debug("id:{}, seen:{}".format(mesg.id, seen))
         if mesg.id in seen or str(mesg.id) in seen:
+            logger.debug("id:{}, seen:{}".format(mesg.id, seen))
             continue
         else:
+            logger.info("message is unseen: id:{}, {} seen:{}".format(mesg.id, mesg.message, seen))
             messages_out_unseen.append(mesg)
     return messages_out_unseen
 
@@ -150,14 +149,14 @@ seen= getSeenMessages()
 #added to avoid messaging multiple more than 5 times
 total_cnt = 0
 messages_out = getMediaMessages(messages)
-messages_out_unseen=filterSeenMessages(seen, messages_out)
+messages_out_unseen = filterSeenMessages(seen, messages_out)
 total_cnt = len(messages_out)
 message_type = []
 if len(messages_out_unseen)>0:
     message_type.append("media")
 
 messages_out+= getTextMessages(messages)
-messages_out_unseen1=filterSeenMessages(seen, messages_out)
+messages_out_unseen1 = filterSeenMessages(seen, messages_out)
 total_cnt += len(messages_out)
 if len(messages_out_unseen1) > 0:
     message_type.append("text")
@@ -165,26 +164,27 @@ if len(messages_out_unseen1) > 0:
 messages_out_unseen = messages_out_unseen + messages_out_unseen1
 
 cnt = len(messages_out_unseen)
-logger.info("Filtered cnt:{}, total:{}, out:{}, unseen:{}".format(cnt, total_cnt, [message.id for message in messages_out], [message.id for message in messages_out_unseen]))
+logger.info("new message cnt:{}, total_good_messages:{}, messages_downloaded:{}, out:{}, unseen:{}".format(cnt, total_cnt, len(messages), [message.id for message in messages_out], [message.id for message in messages_out_unseen]))
 
 telegram_user_ids=VisaAppointmentSecrets.telegram_user_ids
 sms_users = VisaAppointmentSecrets.us_sms_numbers
 #url to validate Pranoy/Chandni number https://console.twilio.com/us1/develop/phone-numbers/manage/verified?frameUrl=%2Fconsole%2Fphone-numbers%2Fverified%3FphoneNumberContains%3D4254948233%26friendlyNameContains%3DanotherOne%26__override_layout__%3Dembed%26bifrost%3Dtrue%26x-target-region%3Dus1
 if cnt>=1:
-    if cnt>=3:
+    if cnt>=4:
         ratio = cnt / total_cnt
         out_mesg = "⭐⭐IMP, Potential Bulk appointment⭐⭐: {}: we have {} new messages of type:{}, ratio unseen/seen is {} and date is {}, do check Bulk Login Slots... ".format(message_src, cnt, ':'.join(message_type), round(ratio,1), messages_out_unseen[0].date)
         TelegramUtils.sendTelegramMessage(out_mesg, telegram_user_ids)
         #added this so we do not get bombarded in the interim if the latest messages all are for same event
-        if ratio >= 0.6 or ( cnt>=6 and ratio>=0.4 ):
+        #added check for media type as we are getting false positves with text messages
+        if 'media' in message_type and (ratio >= 0.6 or ( cnt>=6 and ratio>=0.4 )):
             logger.info("Potential Bulk appointment, Sending text message for {} new messages, ratio:{}".format(cnt, ratio))
             sendMesgCounter = 1 #not used right now
             sendMessage(cnt, ratio, sms_users)
         else:
             logger.info("Skipping sending text message for cnt:{}, ratio:{}".format(cnt, ratio))
     else:
-        out_mesg = "{}: we have {} new messages of type:{} and date is {}, check Telegram Message channel - *H1B/H4 Visa Dropbox slots( No Questions only slot availability messages)*".format(message_src, cnt, ':'.join(message_type), messages_out_unseen[0].date)
-        TelegramUtils.sendTelegramMessage(out_mesg, telegram_user_ids)
+         out_mesg = "{}: we have {} new messages of type:{} and date is {}, check Telegram Message channel - *H1B/H4 Visa Dropbox slots( No Questions only slot availability messages)*".format(message_src, cnt, ':'.join(message_type), messages_out_unseen[0].date)
+         TelegramUtils.sendTelegramMessage(out_mesg, telegram_user_ids)
 
     writeMessagesToFile(messages_out_unseen)
     # https://dashboard.sinch.com/sms/api/rest  need to us api, https://www.geeksforgeeks.org/send-sms-updates-mobile-phone-using-python/
