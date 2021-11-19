@@ -4,6 +4,7 @@ pip install python-telegram-bot --upgrade
 brew install watch
 pip install clx-sdk-xm #for sms, not needed as we are using Twilio
 pip install twilio
+pip install python-dateutil
 
 
 #CRON
