@@ -1,3 +1,4 @@
+import json
 import logging
 
 import TelegramLocalMessageStore
@@ -39,15 +40,18 @@ def getAllMessages(messages):
     return mess
 
 def getTextMessages(messages):
-    out=[]
+    out = []
+    from_user_id_set = set()
     for m in messages:
         if ignoreNotRelevantMessages(m):
             continue
         if not m.media:
             mesg_lower = m.message.lower()
+            from_user_id = m.from_id.user_id #from_id is the user who send the message
             for keyword_good in VisaAppointmentConstants.LIST_MESSAGES_KEYWORDS_GOOD:
-                if keyword_good in mesg_lower:
+                if keyword_good in mesg_lower and from_user_id not in from_user_id_set:
                     logger.info("date:{}, id: {}, message:{}, type:text".format(m.date, m.id, m.message))
+                    from_user_id_set.add(from_user_id) # we want to consider only 1 message from an user
                     out.append(m)
                     break
     return out
@@ -65,16 +69,19 @@ def ignoreNotRelevantMessages(message):
     return False
 
 def getMediaMessages(messages):
-    messages_out=[]
+    out = []
+    from_user_id_set = set()
     for m in messages:
         #ignore non-relevant messages
         if ignoreNotRelevantMessages(m):
             continue
-        # only photo media
-        if m.media and hasattr(m.media, 'photo'):
+        # only photo media and 1 user per message to be considered
+        from_user_id = m.from_id.user_id  # from_id is the user who send the message
+        if m.media and hasattr(m.media, 'photo') and from_user_id not in from_user_id_set:
             logger.debug("date:{}, id: {}, message:{}, type:media".format(m.date, m.id, m.message))
-            messages_out.append(m)
-    return messages_out
+            from_user_id_set.add(from_user_id)  # we want to consider only 1 message from an user
+            out.append(m)
+    return out
 
 def getEntityData(entity_id, limit):
     entity = client.get_entity(entity_id)
