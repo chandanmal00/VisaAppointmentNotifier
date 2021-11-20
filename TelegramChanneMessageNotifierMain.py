@@ -138,65 +138,70 @@ def sendMessage(cnt, ratio, sms_users):
         logger.info("India friendly time")
         TwilioSendTextMessage.sendSMS("⭐BulkAppointment⭐ There are {} messages, ratio:{}, login and book VISA, time:{} PST".format(cnt, round(ratio,1),TimeUtilities.getPSTTime()), sms_users)
 
-###This is super important for the utility to work, do not delete the lines below
-result = client(GetDialogsRequest(
-             offset_date=None,
-             offset_id=0,
-             offset_peer=InputPeerEmpty(),
-             limit=100,
-             hash=0))
-entities = result.chats
-##If we want to get last x messages from a channel, max is 100 (limited by Telegram)
-#getEntityMessgaes(100)
+def runApplication():
+    ##This is super important for the utility to work, do not delete the lines below
+    result = client(GetDialogsRequest(
+                 offset_date=None,
+                 offset_id=0,
+                 offset_peer=InputPeerEmpty(),
+                 limit=100,
+                 hash=0))
+    entities = result.chats
+    ##If we want to get last x messages from a channel, max is 100 (limited by Telegram)
+    #getEntityMessgaes(100)
 
-##mesages from a specific entity, it only returns last 100 messages
-messages = getEntityData(1371184682, 100)
-logger.debug("messages retrieved: {}".format(len(messages)))
-seen= getSeenMessages()
-#added to avoid messaging multiple more than 5 times
-total_cnt = 0
-messages_out = getMediaMessages(messages)
-messages_out_unseen = filterSeenMessages(seen, messages_out)
-total_cnt = len(messages_out)
-message_type = []
-if len(messages_out_unseen)>0:
-    message_type.append("media")
+    ##mesages from a specific entity, it only returns last 100 messages
+    messages = getEntityData(1371184682, 100)
+    logger.debug("messages retrieved: {}".format(len(messages)))
+    seen= getSeenMessages()
+    #added to avoid messaging multiple more than 5 times
+    total_cnt = 0
+    messages_out = getMediaMessages(messages)
+    messages_out_unseen = filterSeenMessages(seen, messages_out)
+    total_cnt = len(messages_out)
+    message_type = []
+    if len(messages_out_unseen)>0:
+        message_type.append("media")
 
-messages_out+= getTextMessages(messages)
-messages_out_unseen1 = filterSeenMessages(seen, messages_out)
-total_cnt += len(messages_out)
-if len(messages_out_unseen1) > 0:
-    message_type.append("text")
+    messages_out+= getTextMessages(messages)
+    messages_out_unseen1 = filterSeenMessages(seen, messages_out)
+    total_cnt += len(messages_out)
+    if len(messages_out_unseen1) > 0:
+        message_type.append("text")
 
-messages_out_unseen = messages_out_unseen + messages_out_unseen1
+    messages_out_unseen = messages_out_unseen + messages_out_unseen1
 
-cnt = len(messages_out_unseen)
-logger.info("new message cnt:{}, total_good_messages:{}, messages_downloaded:{}, out:{}, unseen:{}".format(cnt, total_cnt, len(messages), [message.id for message in messages_out], [message.id for message in messages_out_unseen]))
+    cnt = len(messages_out_unseen)
+    logger.info("new message cnt:{}, total_good_messages:{}, messages_downloaded:{}, out:{}, unseen:{}".format(cnt, total_cnt, len(messages), [message.id for message in messages_out], [message.id for message in messages_out_unseen]))
 
-telegram_user_ids=VisaAppointmentSecrets.telegram_user_ids
-sms_users = VisaAppointmentSecrets.us_sms_numbers
-#url to validate Pranoy/Chandni number https://console.twilio.com/us1/develop/phone-numbers/manage/verified?frameUrl=%2Fconsole%2Fphone-numbers%2Fverified%3FphoneNumberContains%3D4254948233%26friendlyNameContains%3DanotherOne%26__override_layout__%3Dembed%26bifrost%3Dtrue%26x-target-region%3Dus1
-if cnt>=1:
-    if cnt>=4:
-        ratio = cnt / total_cnt
-        out_mesg = "⭐⭐IMP, Potential Bulk appointment⭐⭐: {}: we have {} new messages of type:{}, ratio unseen/seen is {} and date is {}, do check Bulk Login Slots... ".format(message_src, cnt, ':'.join(message_type), round(ratio,1), messages_out_unseen[0].date)
-        TelegramUtils.sendTelegramMessage(out_mesg, telegram_user_ids)
-        #added this so we do not get bombarded in the interim if the latest messages all are for same event
-        #added check for media type as we are getting false positves with text messages
-        if 'media' in message_type and (ratio >= 0.6 or ( cnt>=6 and ratio>=0.4 )):
-            logger.info("Potential Bulk appointment, Sending text message for {} new messages, ratio:{}".format(cnt, ratio))
-            sendMesgCounter = 1 #not used right now
-            sendMessage(cnt, ratio, sms_users)
+    telegram_user_ids=VisaAppointmentSecrets.telegram_user_ids
+    sms_users = VisaAppointmentSecrets.us_sms_numbers
+    #url to validate Pranoy/Chandni number https://console.twilio.com/us1/develop/phone-numbers/manage/verified?frameUrl=%2Fconsole%2Fphone-numbers%2Fverified%3FphoneNumberContains%3D4254948233%26friendlyNameContains%3DanotherOne%26__override_layout__%3Dembed%26bifrost%3Dtrue%26x-target-region%3Dus1
+    if cnt>=1:
+        if cnt>=4:
+            ratio = cnt / total_cnt
+            out_mesg = "⭐⭐IMP, Potential Bulk appointment⭐⭐: {}: we have {} new messages of type:{}, ratio unseen/seen is {} and date is {}, do check Bulk Login Slots... ".format(message_src, cnt, ':'.join(message_type), round(ratio,1), messages_out_unseen[0].date)
+            TelegramUtils.sendTelegramMessage(out_mesg, telegram_user_ids)
+            #added this so we do not get bombarded in the interim if the latest messages all are for same event
+            #added check for media type as we are getting false positves with text messages
+            if 'media' in message_type and (ratio >= 0.6 or ( cnt>=6 and ratio>=0.4 )):
+                logger.info("Potential Bulk appointment, Sending text message for {} new messages, ratio:{}".format(cnt, ratio))
+                sendMesgCounter = 1 #not used right now
+                sendMessage(cnt, ratio, sms_users)
+            else:
+                logger.info("Skipping sending text message for cnt:{}, ratio:{}".format(cnt, ratio))
         else:
-            logger.info("Skipping sending text message for cnt:{}, ratio:{}".format(cnt, ratio))
-    else:
-         out_mesg = "{}: we have {} new messages of type:{} and date is {}, check Telegram Message channel - *H1B/H4 Visa Dropbox slots( No Questions only slot availability messages)*".format(message_src, cnt, ':'.join(message_type), messages_out_unseen[0].date)
-         TelegramUtils.sendTelegramMessage(out_mesg, telegram_user_ids)
+             out_mesg = "{}: we have {} new messages of type:{} and date is {}, check Telegram Message channel - *H1B/H4 Visa Dropbox slots( No Questions only slot availability messages)*".format(message_src, cnt, ':'.join(message_type), messages_out_unseen[0].date)
+             TelegramUtils.sendTelegramMessage(out_mesg, telegram_user_ids)
 
-    writeMessagesToFile(messages_out_unseen)
-    # https://dashboard.sinch.com/sms/api/rest  need to us api, https://www.geeksforgeeks.org/send-sms-updates-mobile-phone-using-python/
-    # MessageUtils.sendTextMessage()
-else:
-    logger.info("NOTHING to do HERE, sit and chill")
+        writeMessagesToFile(messages_out_unseen)
+        # https://dashboard.sinch.com/sms/api/rest  need to us api, https://www.geeksforgeeks.org/send-sms-updates-mobile-phone-using-python/
+        # MessageUtils.sendTextMessage()
+    else:
+        logger.info("NOTHING to do HERE, sit and chill")
+
+runApplication()
+
+
 
 
