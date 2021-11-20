@@ -2,7 +2,7 @@ import os.path
 import VisaAppointmentLogger
 
 logger = VisaAppointmentLogger.getLogger()
-filename = "/tmp/stored_message.data"
+filename = "/tmp/stored.data"
 
 def readFilePrintMessages():
     out = set([])
@@ -13,6 +13,7 @@ def readFilePrintMessages():
         #print("data in file is:",line, line [:-1])
         line=line[:-1]
         out.add(line)
+    fw.close()
     return out
 
 def  writeMessageToFile(messages):
@@ -26,6 +27,6 @@ def  writeMessageToFile(messages):
         logger.info("Wrote message: {}".format(message.id))
         fw.write(str(message.id)+"\n")
         out.add(message.id)
+    fw.close()
 
 
-readFilePrintMessages()
