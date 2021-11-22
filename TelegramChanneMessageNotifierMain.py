@@ -1,6 +1,5 @@
 import json
 import logging
-import time
 
 import TelegramLocalMessageStore
 import TelegramUtils
@@ -15,6 +14,7 @@ import sys
 import VisaAppointmentSecrets
 import VisaAppointmentConstants
 import VisaAppointmentLogger
+import time
 
 logger = VisaAppointmentLogger.getLogger()
 MESSAGE_ABOVE_LEN_IGNORE = 30
@@ -51,7 +51,7 @@ def getTextMessages(messages):
             from_user_id = m.from_id.user_id #from_id is the user who send the message
             for keyword_good in VisaAppointmentConstants.LIST_MESSAGES_KEYWORDS_GOOD:
                 if keyword_good in mesg_lower and from_user_id not in from_user_id_set:
-                    logger.info("date:{}, id: {}, message:{}, type:text".format(m.date, m.id, m.message))
+                    logger.debug("date:{}, id: {}, message:{}, type:text".format(m.date, m.id, m.message))
                     from_user_id_set.add(from_user_id) # we want to consider only 1 message from an user
                     out.append(m)
                     break
@@ -117,14 +117,14 @@ def getEntityMessgaes(entities, last_no_message):
         logger.info("title:{}, id:{}".format(title, str(id)))
         logger.info("messages: {}".format(messages))
 
-def filterSeenMessages(seen, messages_out):
+def filterSeenMessages(seen, messages_out, message_type):
     messages_out_unseen = []
     for mesg in messages_out:
         if mesg.id in seen or str(mesg.id) in seen:
-            logger.debug("id:{}, seen:{}".format(mesg.id, seen))
+            logger.info("message of type {} with id:{}, seen:{}".format(message_type, mesg.id, seen))
             continue
         else:
-            logger.info("message is unseen: id:{}, {} seen:{}".format(mesg.id, mesg.message, seen))
+            logger.info("message is unseen: id:{}, type:{}, mesg:{}, seen:{}".format(mesg.id, message_type, mesg.message, seen))
             messages_out_unseen.append(mesg)
     return messages_out_unseen
 
@@ -132,12 +132,12 @@ def sendMessage(cnt, ratio, sms_users):
     #only send if there are more than 1 message and users friendly time
     if TimeUtilities.isUSFriendlyTime():
         logger.info("US friendly time")
-        TwilioSendTextMessage.sendSMS("⭐BulkAppointment⭐ There are {} messages, ratio:{}, login and book VISA, time:{} PST".format(cnt, round(ratio,1), TimeUtilities.getPSTTime()), sms_users)
+        TwilioSendTextMessage.sendSMS("**BulkAppointment** There are {} messages, ratio:{}, login and book VISA, time:{} PST".format(cnt, round(ratio,1), TimeUtilities.getPSTTime()), sms_users)
 
     if TimeUtilities.isIndiaFriendlyTime():
         sms_users = VisaAppointmentSecrets.india_sms_numbers
         logger.info("India friendly time")
-        TwilioSendTextMessage.sendSMS("⭐BulkAppointment⭐ There are {} messages, ratio:{}, login and book VISA, time:{} PST".format(cnt, round(ratio,1),TimeUtilities.getPSTTime()), sms_users)
+        TwilioSendTextMessage.sendSMS("**BulkAppointment** There are {} messages, ratio:{}, login and book VISA, time:{} PST".format(cnt, round(ratio,1),TimeUtilities.getPSTTime()), sms_users)
 
 def runApplication():
     ##This is super important for the utility to work, do not delete the lines below
@@ -154,18 +154,20 @@ def runApplication():
     ##mesages from a specific entity, it only returns last 100 messages
     messages = getEntityData(1371184682, 100)
     logger.debug("messages retrieved: {}".format(len(messages)))
-    seen= getSeenMessages()
+    seen = getSeenMessages()
     #added to avoid messaging multiple more than 5 times
     total_cnt = 0
     messages_out = getMediaMessages(messages)
-    messages_out_unseen = filterSeenMessages(seen, messages_out)
+    messages_out_unseen = filterSeenMessages(seen, messages_out, 'media')
     total_cnt = len(messages_out)
     message_type = []
     if len(messages_out_unseen)>0:
         message_type.append("media")
 
+    #expand seen messages so that we do not double count them
+    seen = set(list(seen) + list(messages_out_unseen))
     messages_out+= getTextMessages(messages)
-    messages_out_unseen1 = filterSeenMessages(seen, messages_out)
+    messages_out_unseen1 = filterSeenMessages(seen, messages_out, 'text')
     total_cnt += len(messages_out)
     if len(messages_out_unseen1) > 0:
         message_type.append("text")
@@ -181,7 +183,7 @@ def runApplication():
     if cnt>=1:
         if cnt>=4:
             ratio = cnt / total_cnt
-            out_mesg = "⭐⭐IMP, Potential Bulk appointment⭐⭐: {}: we have {} new messages of type:{}, ratio unseen/seen is {} and date is {}, do check Bulk Login Slots... ".format(message_src, cnt, ':'.join(message_type), round(ratio,1), messages_out_unseen[0].date)
+            out_mesg = "**IMP, Potential Bulk appointment**: {}: we have {} new messages of type:{}, ratio unseen/seen is {} and date is {}, do check Bulk Login Slots... ".format(message_src, cnt, ':'.join(message_type), round(ratio,1), messages_out_unseen[0].date)
             TelegramUtils.sendTelegramMessage(out_mesg, telegram_user_ids)
             #added this so we do not get bombarded in the interim if the latest messages all are for same event
             #added check for media type as we are getting false positves with text messages
