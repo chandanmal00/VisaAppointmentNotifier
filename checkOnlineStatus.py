@@ -1,7 +1,5 @@
 
 import requests
-import bs4 as bs
-import json
 import json
 from datetime import datetime
 import time
@@ -48,11 +46,24 @@ def checkOnlineStatus():
     #{"records":[{"id":"recG2BkY6p7vo76Lm","fields":{"Name":"value","Notes":"1\n","Status":"Done"},"createdTime":"2021-11-23T02:16:33.000Z"}]}
     #{"records":[{"id":"recG2BkY6p7vo76Lm","fields":{"Name":"value","Notes":"1\n","Status":"Todo"},"createdTime":"2021-11-23T02:16:33.000Z"}]}
     dt = datetime.now()
-    logger.info("Trying to check hour:{}".format(dt.hour))
+    logger.info("Trying to check hour:{}, min {}, sec: {} for if we are done or not for VISA".format(dt.hour, dt.minute , dt.second))
     if dt.hour == 21 and dt.minute == 30 and dt.second>=25:
-        logger.info("checked status for hour:{}".format(dt.hour, dt.minute))
+        logger.info("Conditions met to check status for hour:{}".format(dt.hour, dt.minute))
         out = getResponse("https://v1.nocodeapi.com/cmaloo/airtable/ESoExvuzNuhgkqze?tableName=Table1")
         logger.info("Sleeping 20 seconds as we checked: status: {}".format(out))
-        time.sleep(20)
+        time.sleep(7)
         return out
     return 0
+
+def checkOnlineStatusV2():
+    #https: // v1.nocodeapi.com / cmaloo / airtable / ESoExvuzNuhgkqze?tableName = Table1
+    #https://v1.nocodeapi.com/cmaloo/airtable/ESoExvuzNuhgkqze?tableName=Table1
+    #{"records":[{"id":"recG2BkY6p7vo76Lm","fields":{"Name":"value","Notes":"1\n","Status":"Done"},"createdTime":"2021-11-23T02:16:33.000Z"}]}
+    #{"records":[{"id":"recG2BkY6p7vo76Lm","fields":{"Name":"value","Notes":"1\n","Status":"Todo"},"createdTime":"2021-11-23T02:16:33.000Z"}]}
+    dt = datetime.now()
+    logger.info("Trying to check hour:{}".format(dt.hour))
+    logger.info("checked status for hour:{}".format(dt.hour, dt.minute))
+    out = getResponse("https://v1.nocodeapi.com/cmaloo/airtable/ESoExvuzNuhgkqze?tableName=Table1")
+    logger.info("Sleeping 20 seconds as we checked: status: {}".format(out))
+    time.sleep(20)
+    return out
