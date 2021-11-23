@@ -123,7 +123,7 @@ def filterSeenMessages(seen, messages_out, message_type):
     messages_out_unseen = []
     for mesg in messages_out:
         if mesg.id in seen or str(mesg.id) in seen:
-            logger.info("message of type {} with id:{}, seen:{}".format(message_type, mesg.id, seen))
+            logger.debug("message of type {} with id:{}, seen:{}".format(message_type, mesg.id, seen))
             continue
         else:
             logger.info("message is unseen: id:{}, type:{}, mesg:{}, seen:{}".format(mesg.id, message_type, mesg.message, seen))
@@ -140,6 +140,19 @@ def sendMessage(cnt, ratio, sms_users):
         sms_users = VisaAppointmentSecrets.india_sms_numbers
         logger.info("India friendly time")
         TwilioSendTextMessage.sendSMS("**BulkAppointment** There are {} messages, ratio:{}, login and book VISA, time:{} PST".format(cnt, round(ratio,1),TimeUtilities.getPSTTime()), sms_users)
+
+def triggerConditionCheck(cnt, total_cnt, message_type_list):
+    ratio = cnt/total_cnt
+    if 'media' in message_type_list and (ratio >= 0.5 or (cnt >= 4 and ratio >= 0.2)):
+        return True
+
+    if (cnt >= 4 and ratio >= 0.6) or (cnt >= 5 and ratio >= 0.32):
+        return True
+    
+    if cnt >=6 :
+        return True
+
+    return False
 
 def runApplication():
     ##This is super important for the utility to work, do not delete the lines below
@@ -162,23 +175,23 @@ def runApplication():
     messages_out = getMediaMessages(messages)
     messages_out_unseen = filterSeenMessages(seen, messages_out, 'media')
     total_cnt = len(messages_out)
-    message_type = []
+    message_type_list = []
     if len(messages_out_unseen)>0:
-        message_type.append("media")
+        message_type_list.append("media")
 
     #expand seen messages so that we do not double count them
     seen = set(list(seen) + [mesg.id for mesg in messages_out_unseen])
-    logger.info("updated seen is: {}".format(seen))
+    logger.debug("updated seen is: {}".format(seen))
     messages_out+= getTextMessages(messages)
     messages_out_unseen1 = filterSeenMessages(seen, messages_out, 'text')
     total_cnt += len(messages_out)
     if len(messages_out_unseen1) > 0:
-        message_type.append("text")
+        message_type_list.append("text")
 
     messages_out_unseen = messages_out_unseen + messages_out_unseen1
 
     cnt = len(messages_out_unseen)
-    logger.info("new message cnt:{}, total_good_messages:{}, messages_downloaded:{}, out:{}, unseen:{}".format(cnt, total_cnt, len(messages), [message.id for message in messages_out], [message.id for message in messages_out_unseen]))
+    logger.info("new message cnt:{}, ratio:{}, total_good_messages:{}, messages_downloaded:{}, out:{}, unseen:{}".format(cnt, cnt / total_cnt, total_cnt, len(messages), [message.id for message in messages_out], [message.id for message in messages_out_unseen]))
 
     telegram_user_ids=VisaAppointmentSecrets.telegram_user_ids
     sms_users = VisaAppointmentSecrets.us_sms_numbers
@@ -192,13 +205,13 @@ def runApplication():
         logger.info("We will continue to SMS since we are not done yet")
 
     if cnt>=1:
-        if cnt>=4:
+        if cnt>=3:
             ratio = cnt / total_cnt
-            out_mesg = "**IMP, Potential Bulk appointment**: {}: we have {} new messages of type:{}, ratio unseen/seen is {} and date is {}, do check Bulk Login Slots... ".format(message_src, cnt, ':'.join(message_type), round(ratio,1), messages_out_unseen[0].date)
+            out_mesg = "**IMP, Potential Bulk appointment**: {}: we have {} new messages of type:{}, ratio unseen/seen is {} and date is {}, do check Bulk Login Slots... ".format(message_src, cnt, ':'.join(message_type_list), round(ratio,1), messages_out_unseen[0].date)
             TelegramUtils.sendTelegramMessage(out_mesg, telegram_user_ids)
             #added this so we do not get bombarded in the interim if the latest messages all are for same event
             #added check for media type as we are getting false positves with text messages
-            if 'media' in message_type and (ratio >= 0.6 or ( cnt>=6 and ratio>=0.4 )):
+            if triggerConditionCheck(cnt, total_cnt, message_type_list):
                 logger.info("Potential Bulk appointment, Sending text message for {} new messages, ratio:{}".format(cnt, ratio))
                 sendMesgCounter = 1 #not used right now
                 if send_sms_flag:
@@ -208,7 +221,7 @@ def runApplication():
             else:
                 logger.info("Skipping sending text message for cnt:{}, ratio:{}".format(cnt, ratio))
         else:
-             out_mesg = "{}: we have {} new messages of type:{} and date is {}, check Telegram Message channel - *H1B/H4 Visa Dropbox slots( No Questions only slot availability messages)*".format(message_src, cnt, ':'.join(message_type), messages_out_unseen[0].date)
+             out_mesg = "{}: we have {} new messages of type:{} and date is {}, check Telegram Message channel - *H1B/H4 Visa Dropbox slots( No Questions only slot availability messages)*".format(message_src, cnt, ':'.join(message_type_list), messages_out_unseen[0].date)
              TelegramUtils.sendTelegramMessage(out_mesg, telegram_user_ids)
 
         writeMessagesToFile(messages_out_unseen)
@@ -218,6 +231,4 @@ def runApplication():
         logger.info("NOTHING to do HERE, sit and chill")
 
 runApplication()
-
-
 
