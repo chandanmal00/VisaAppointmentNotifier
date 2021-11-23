@@ -165,7 +165,8 @@ def runApplication():
         message_type.append("media")
 
     #expand seen messages so that we do not double count them
-    seen = set(list(seen) + list(messages_out_unseen))
+    seen = set(list(seen) + [mesg.id for mesg in messages_out_unseen])
+    logger.info("updated seen is: {}".format(seen))
     messages_out+= getTextMessages(messages)
     messages_out_unseen1 = filterSeenMessages(seen, messages_out, 'text')
     total_cnt += len(messages_out)
@@ -204,7 +205,4 @@ def runApplication():
         logger.info("NOTHING to do HERE, sit and chill")
 
 runApplication()
-
-
-
-
+    
