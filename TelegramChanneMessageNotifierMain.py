@@ -15,7 +15,9 @@ import VisaAppointmentSecrets
 import VisaAppointmentConstants
 import VisaAppointmentLogger
 import time
+import checkOnlineStatus
 
+send_sms_flag = True
 logger = VisaAppointmentLogger.getLogger()
 MESSAGE_ABOVE_LEN_IGNORE = 30
 message_src = None
@@ -180,7 +182,15 @@ def runApplication():
 
     telegram_user_ids=VisaAppointmentSecrets.telegram_user_ids
     sms_users = VisaAppointmentSecrets.us_sms_numbers
+    #logger.info("Checking status:{}".format(checkOnlineStatus.checkOnlineStatusV2()))
     #url to validate Pranoy/Chandni number https://console.twilio.com/us1/develop/phone-numbers/manage/verified?frameUrl=%2Fconsole%2Fphone-numbers%2Fverified%3FphoneNumberContains%3D4254948233%26friendlyNameContains%3DanotherOne%26__override_layout__%3Dembed%26bifrost%3Dtrue%26x-target-region%3Dus1
+
+    if checkOnlineStatus.checkOnlineStatus() == 1:
+        send_sms_flag = False
+        logger.info("We are done, so stopping SMS calls")
+    else:
+        logger.info("We will continue to SMS since we are not done yet")
+
     if cnt>=1:
         if cnt>=4:
             ratio = cnt / total_cnt
@@ -191,7 +201,10 @@ def runApplication():
             if 'media' in message_type and (ratio >= 0.6 or ( cnt>=6 and ratio>=0.4 )):
                 logger.info("Potential Bulk appointment, Sending text message for {} new messages, ratio:{}".format(cnt, ratio))
                 sendMesgCounter = 1 #not used right now
-                sendMessage(cnt, ratio, sms_users)
+                if send_sms_flag:
+                    sendMessage(cnt, ratio, sms_users)
+                else:
+                    logger.info("We are done, so stopping SMS")
             else:
                 logger.info("Skipping sending text message for cnt:{}, ratio:{}".format(cnt, ratio))
         else:
@@ -205,4 +218,6 @@ def runApplication():
         logger.info("NOTHING to do HERE, sit and chill")
 
 runApplication()
-    
+
+
+
