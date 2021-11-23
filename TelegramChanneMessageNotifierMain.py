@@ -191,7 +191,7 @@ def runApplication():
     messages_out_unseen = messages_out_unseen + messages_out_unseen1
 
     cnt = len(messages_out_unseen)
-    logger.info("new message cnt:{}, ratio:{}, total_good_messages:{}, messages_downloaded:{}, out:{}, unseen:{}".format(cnt, cnt / total_cnt, total_cnt, len(messages), [message.id for message in messages_out], [message.id for message in messages_out_unseen]))
+    logger.info("new message cnt:{}, total_good_messages:{}, messages_downloaded:{}, out:{}, unseen:{}".format(cnt, total_cnt, len(messages), [message.id for message in messages_out], [message.id for message in messages_out_unseen]))
 
     telegram_user_ids=VisaAppointmentSecrets.telegram_user_ids
     sms_users = VisaAppointmentSecrets.us_sms_numbers
