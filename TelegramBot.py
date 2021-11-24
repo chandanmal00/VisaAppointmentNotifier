@@ -18,7 +18,7 @@ def getUpdatesToBotMessages():
     updates = bot.getUpdates()
     user_ids=VisaAppointmentConstants.telegram_user_ids
     for u in updates:
-        id= u['message']['chat']['id']
+        id = u['message']['chat']['id']
         user_ids.add(id)
         logger.info("Userid to add: {}".format(id))
 

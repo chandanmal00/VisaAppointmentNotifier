@@ -237,5 +237,6 @@ def runApplication():
 while True:
     runApplication()
     time.sleep(30)
-    
- 
+
+
+

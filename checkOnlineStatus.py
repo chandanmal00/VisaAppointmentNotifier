@@ -47,7 +47,7 @@ def checkOnlineStatus():
     #{"records":[{"id":"recG2BkY6p7vo76Lm","fields":{"Name":"value","Notes":"1\n","Status":"Todo"},"createdTime":"2021-11-23T02:16:33.000Z"}]}
     dt = datetime.now()
     logger.info("Trying to check hour:{}, min {}, sec: {} for if we are done or not for VISA".format(dt.hour, dt.minute , dt.second))
-    if dt.hour == 21 and dt.minute == 30 and dt.second>=25:
+    if dt.hour == 21 and dt.minute == 26 and dt.second>=25:
         logger.info("Conditions met to check status for hour:{}".format(dt.hour, dt.minute))
         out = getResponse("https://v1.nocodeapi.com/cmaloo/airtable/ESoExvuzNuhgkqze?tableName=Table1")
         logger.info("Sleeping 20 seconds as we checked: status: {}".format(out))

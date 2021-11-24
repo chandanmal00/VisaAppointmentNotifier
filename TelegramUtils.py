@@ -10,3 +10,4 @@ def sendTelegramMessage(message, senders):
     for sender in senders:
         bot.send_message(sender, message)
         logger.info("Sending sender:{}, message: {}".format(sender, message))
+    #for sender in senders:

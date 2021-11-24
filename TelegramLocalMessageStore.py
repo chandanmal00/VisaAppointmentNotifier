@@ -4,8 +4,8 @@ import TimeUtilities
 from datetime import datetime
 from datetime import timedelta
 logger = VisaAppointmentLogger.getLogger()
-#filename = "D:\data\data\store.log"
-filename = "/tmp/store.log"
+filename = "D:\data\data\store.log"
+#filename = "/tmp/store.log"
 
 def readFilePrintMessages():
     out = set([])
@@ -37,5 +37,3 @@ def  writeMessageToFile(messages):
         fw.write(str(message.id)+"\n")
         out.add(message.id)
     fw.close()
-
-
