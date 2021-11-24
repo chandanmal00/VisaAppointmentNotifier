@@ -8,12 +8,13 @@ import VisaAppointmentLogger
 # and set the environment variables. See http://twil.io/secure
 account_sid = VisaAppointmentSecrets.twilio_account_sid
 auth_token = VisaAppointmentSecrets.twilio_auth_token
-logger =  VisaAppointmentLogger.getLogger()
+logger = VisaAppointmentLogger.getLogger()
 
 def sendSMS(send_message, toList):
-    client = Client(account_sid, auth_token)
     if toList is None:
-        toList =VisaAppointmentSecrets.us_sms_default_list
+        logger.error("No users set to send sms list: set us_sms_numbers or india_sms_numbers in Secrets file: VisaAppointmentSecrets.py ")
+        return
+    client = Client(account_sid, auth_token)
     for to in toList:
         logger.info("Sending Twilio message:{} to: {}".format(send_message, to))
         message = client.messages \
