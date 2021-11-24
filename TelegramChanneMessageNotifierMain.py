@@ -141,15 +141,16 @@ def sendMessage(cnt, ratio, sms_users):
         logger.info("India friendly time")
         TwilioSendTextMessage.sendSMS("**BulkAppointment** There are {} messages, ratio:{}, login and book VISA, time:{} PST".format(cnt, round(ratio,1),TimeUtilities.getPSTTime()), sms_users)
 
+
 def triggerConditionCheck(cnt, total_cnt, message_type_list):
-    ratio = cnt/total_cnt
+    ratio = cnt / total_cnt
     if 'media' in message_type_list and (ratio >= 0.5 or (cnt >= 4 and ratio >= 0.2)):
         return True
 
     if (cnt >= 4 and ratio >= 0.6) or (cnt >= 5 and ratio >= 0.32):
         return True
-    
-    if cnt >=6 :
+
+    if cnt >= 6:
         return True
 
     return False
@@ -204,7 +205,7 @@ def runApplication():
     else:
         logger.info("We will continue to SMS since we are not done yet")
 
-    if cnt>=1:
+    if cnt>=2:
         if cnt>=3:
             ratio = cnt / total_cnt
             out_mesg = "**IMP, Potential Bulk appointment**: {}: we have {} new messages of type:{}, ratio unseen/seen is {} and date is {}, do check Bulk Login Slots... ".format(message_src, cnt, ':'.join(message_type_list), round(ratio,1), messages_out_unseen[0].date)
@@ -231,4 +232,5 @@ def runApplication():
         logger.info("NOTHING to do HERE, sit and chill")
 
 runApplication()
+
 
