@@ -24,5 +24,5 @@ def sendSMS(send_message, toList):
             to=to
         )
 
-    logger.info("Message success Id from Twilio: {}".format(message.sid))
+        logger.info("Message success Id from Twilio: {}".format(message.sid))
 
