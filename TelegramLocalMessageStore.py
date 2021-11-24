@@ -10,17 +10,18 @@ filename = "/tmp/store.log"
 def readFilePrintMessages():
     out = set([])
     local_filename, local_filename_hr_back = TimeUtilities.getFileNames(filename)
-    logger.info("local store file names: {} {}".format(local_filename, local_filename_hr_back))
-    for index, fnames in enumerate([local_filename, local_filename_hr_back]):
-        if os.path.exists(local_filename):
-            fw = open(local_filename, "r")
+    logger.debug("local store file names: {} {}".format(local_filename, local_filename_hr_back))
+    for index, fname in enumerate([local_filename, local_filename_hr_back]):
+        if os.path.exists(fname):
+            logger.info("Reading file store:{}".format(fname))
+            fw = open(fname, "r")
             for line in fw:
                 #print("data in file is:",line, line [:-1])
                 line = line[:-1]
                 out.add(line)
             fw.close()
-            logger.info("Persistent Store warmup iteration: {} {}".format(index, out))
-    logger.info("Persistent Store Retrieved mesg ids: {}".format(out))
+            logger.debug("Persistent Store warmup iteration: {} {}".format(index, out))
+    logger.info("Persistent Store Retrieved mesg ids: {}".format(len(out)))
     return out
 
 def  writeMessageToFile(messages):
@@ -36,4 +37,5 @@ def  writeMessageToFile(messages):
         fw.write(str(message.id)+"\n")
         out.add(message.id)
     fw.close()
+
 
