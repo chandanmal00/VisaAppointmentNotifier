@@ -17,7 +17,7 @@ import VisaAppointmentLogger
 import time
 import checkOnlineStatus
 
-send_sms_flag = True
+SEND_SMS_FLAG = 1
 logger = VisaAppointmentLogger.getLogger()
 MESSAGE_ABOVE_LEN_IGNORE = 30
 message_src = None
@@ -200,7 +200,8 @@ def runApplication():
     #url to validate Pranoy/Chandni number https://console.twilio.com/us1/develop/phone-numbers/manage/verified?frameUrl=%2Fconsole%2Fphone-numbers%2Fverified%3FphoneNumberContains%3D4254948233%26friendlyNameContains%3DanotherOne%26__override_layout__%3Dembed%26bifrost%3Dtrue%26x-target-region%3Dus1
 
     if checkOnlineStatus.checkOnlineStatus() == 1:
-        send_sms_flag = False
+        global SEND_SMS_FLAG
+        SEND_SMS_FLAG = 0
         logger.info("We are done, so stopping SMS calls")
     else:
         logger.info("We will continue to SMS since we are not done yet")
@@ -215,7 +216,9 @@ def runApplication():
             if triggerConditionCheck(cnt, total_cnt, message_type_list):
                 logger.info("Potential Bulk appointment, Sending text message for {} new messages, ratio:{}".format(cnt, ratio))
                 sendMesgCounter = 1 #not used right now
-                if send_sms_flag:
+
+                if SEND_SMS_FLAG == 1:
+                    logger.info("Its safe to send: Sending message")
                     sendMessage(cnt, ratio, sms_users)
                 else:
                     logger.info("We are done, so stopping SMS")
@@ -231,6 +234,8 @@ def runApplication():
     else:
         logger.info("NOTHING to do HERE, sit and chill")
 
-runApplication()
-
-
+while True:
+    runApplication()
+    time.sleep(30)
+    
+ 
