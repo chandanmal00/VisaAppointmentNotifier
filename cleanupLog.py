@@ -11,11 +11,9 @@ files = ["D:\data\data\store.log", "D:\data\data\debug.log"]
 
 def logMover():
     for name in files:
-        dt1 = (datetime.now() + timedelta(hours=-3)).strftime(VisaAppointmentConstants.DT_FORMAT)
-        dt2 = (datetime.now() + timedelta(hours=-4)).strftime(VisaAppointmentConstants.DT_FORMAT)
-        dt3 = (datetime.now() + timedelta(hours=-5)).strftime(VisaAppointmentConstants.DT_FORMAT)
-        dt4 = (datetime.now() + timedelta(hours=-6)).strftime(VisaAppointmentConstants.DT_FORMAT)
-        for dt in [dt1, dt2, dt3, dt4]:
+        dt1 = (datetime.now() + timedelta(hours=-23)).strftime(VisaAppointmentConstants.DT_FORMAT)
+        dt2 = (datetime.now() + timedelta(hours=-24)).strftime(VisaAppointmentConstants.DT_FORMAT)
+        for dt in [dt1, dt2]:
             for file_delete in [name + "_" + dt, name + "." + dt]:
                 #shutil.move(name, name+"_"+dt)
                 print("file to be deleted: {}".format(file_delete))

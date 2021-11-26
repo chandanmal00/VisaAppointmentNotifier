@@ -10,7 +10,7 @@ filename = "D:\data\data\store.log"
 def readFilePrintMessages():
     out = set([])
     local_filename, local_filename_hr_back = TimeUtilities.getFileNames(filename)
-    logger.debug("local store file names: {} {}".format(local_filename, local_filename_hr_back))
+    logger.info("local store file names: {} {}".format(local_filename, local_filename_hr_back))
     for index, fname in enumerate([local_filename, local_filename_hr_back]):
         if os.path.exists(fname):
             logger.info("Reading file store:{}".format(fname))

@@ -12,7 +12,7 @@ filename = "D:\data\data\debug.log"
 # logging.basicConfig(filename = filename, filemode='a', level=logging.DEBUG,
 #                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logFormatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-handler = TimedRotatingFileHandler(filename, when="h", interval=4, backupCount=5)
+handler = TimedRotatingFileHandler(filename, when="d", interval=1, backupCount=5)
 handler.setFormatter(logFormatter)
 handler.suffix = VisaAppointmentConstants.DT_FORMAT
 logger = logging.getLogger()

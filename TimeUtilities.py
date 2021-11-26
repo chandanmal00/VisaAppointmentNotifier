@@ -9,7 +9,7 @@ logger = VisaAppointmentLogger.getLogger()
 def isIndiaFriendlyTime():
     dtobj = datetime.now(tz=gettz('Asia/Kolkata'))
     hour=dtobj.hour
-    if hour>=8 and hour<=22:
+    if hour>=8 and hour<=21:
         return True
     return False
 
@@ -17,7 +17,7 @@ def isIndiaFriendlyTime():
 def isUSFriendlyTime():
     dtobj = datetime.now(tz=gettz('US/Seattle'))
     hour = dtobj.hour
-    if hour>=8 and hour<=22:
+    if hour>=8 and hour<=21:
         return True
     return False
 
@@ -28,5 +28,5 @@ def getPSTTime():
 ##this helps in having a rolling based hourly store
 def getFileNames(filename):
     today = datetime.now().strftime(VisaAppointmentConstants.DT_FORMAT)
-    today_1hr_back = (datetime.now() + timedelta(hours=-1)).strftime(VisaAppointmentConstants.DT_FORMAT)
-    return filename + "_" + today, filename + "_" +today_1hr_back
+    today_24hr_back = (datetime.now() + timedelta(hours=-25)).strftime(VisaAppointmentConstants.DT_FORMAT)
+    return filename + "_" + today, filename + "_" +today_24hr_back

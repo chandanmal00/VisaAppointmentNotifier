@@ -192,9 +192,10 @@ def runApplication():
     messages_out_unseen = messages_out_unseen + messages_out_unseen1
 
     cnt = len(messages_out_unseen)
-    logger.info("new message cnt:{}, total_good_messages:{}, messages_downloaded:{}, out:{}, unseen:{}".format(cnt, total_cnt, len(messages), [message.id for message in messages_out], [message.id for message in messages_out_unseen]))
+    logger.info("new message cnt:{}, total_good_messages:{}, messages_downloaded:{}, stored_messages:{}, unseen:{}".format(cnt, total_cnt, len(messages), [message.id for message in messages_out], [message.id for message in messages_out_unseen]))
 
-    telegram_user_ids=VisaAppointmentSecrets.telegram_user_ids
+    telegram_user_ids_india = VisaAppointmentSecrets.telegram_user_ids_india
+    telegram_user_ids_us = VisaAppointmentSecrets.telegram_user_ids_us
     sms_users = VisaAppointmentSecrets.us_sms_numbers
     #logger.info("Checking status:{}".format(checkOnlineStatus.checkOnlineStatusV2()))
     #url to validate Pranoy/Chandni number https://console.twilio.com/us1/develop/phone-numbers/manage/verified?frameUrl=%2Fconsole%2Fphone-numbers%2Fverified%3FphoneNumberContains%3D4254948233%26friendlyNameContains%3DanotherOne%26__override_layout__%3Dembed%26bifrost%3Dtrue%26x-target-region%3Dus1
@@ -210,7 +211,7 @@ def runApplication():
         if cnt>=3:
             ratio = cnt / total_cnt
             out_mesg = "**IMP, Potential Bulk appointment**: {}: we have {} new messages of type:{}, ratio unseen/seen is {} and date is {}, do check Bulk Login Slots... ".format(message_src, cnt, ':'.join(message_type_list), round(ratio,1), messages_out_unseen[0].date)
-            TelegramUtils.sendTelegramMessage(out_mesg, telegram_user_ids)
+            TelegramUtils.sendTelegramMessage(out_mesg)
             #added this so we do not get bombarded in the interim if the latest messages all are for same event
             #added check for media type as we are getting false positves with text messages
             if triggerConditionCheck(cnt, total_cnt, message_type_list):
@@ -226,7 +227,8 @@ def runApplication():
                 logger.info("Skipping sending text message for cnt:{}, ratio:{}".format(cnt, ratio))
         else:
              out_mesg = "{}: we have {} new messages of type:{} and date is {}, check Telegram Message channel - *H1B/H4 Visa Dropbox slots( No Questions only slot availability messages)*".format(message_src, cnt, ':'.join(message_type_list), messages_out_unseen[0].date)
-             TelegramUtils.sendTelegramMessage(out_mesg, telegram_user_ids)
+
+             TelegramUtils.sendTelegramMessage(out_mesg)
 
         writeMessagesToFile(messages_out_unseen)
         # https://dashboard.sinch.com/sms/api/rest  need to us api, https://www.geeksforgeeks.org/send-sms-updates-mobile-phone-using-python/
