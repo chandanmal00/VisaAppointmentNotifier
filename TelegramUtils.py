@@ -1,6 +1,7 @@
 import telegram
 import VisaAppointmentSecrets
 import VisaAppointmentLogger
+import TimeUtilities
 logger = VisaAppointmentLogger.getLogger()
 bot = telegram.Bot(token=VisaAppointmentSecrets.telegram_bot_token)
 
@@ -18,6 +19,6 @@ def sendTelegramMessage(message):
     if TimeUtilities.isIndiaFriendlyTime():
         sendMessage(message, telegram_user_ids_india)
     if TimeUtilities.isUSFriendlyTime():
-        sendTelegramMessage(message, telegram_user_ids_us)
+        sendMessage(message, telegram_user_ids_us)
 
     #for sender in senders:
