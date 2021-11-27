@@ -27,4 +27,4 @@ def logMover():
 while True:
     logMover()
     r = random.randint(2,12)
-    time.sleep(3600 + r) #sleep for 1 hour
+    time.sleep(36000 + r) #sleep for 1 hour
