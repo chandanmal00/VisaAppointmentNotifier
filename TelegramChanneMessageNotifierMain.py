@@ -6,7 +6,6 @@ import TelegramUtils
 import TimeUtilities
 import TwilioSendTextMessage
 from telethon import TelegramClient, events, sync
-import datetime
 from telethon.tl.functions.messages import GetHistoryRequest
 from telethon.tl.types import InputPeerEmpty
 from telethon.tl.functions.messages import GetDialogsRequest
@@ -16,8 +15,11 @@ import VisaAppointmentConstants
 import VisaAppointmentLogger
 import time
 import checkOnlineStatus
+from datetime import datetime
+from datetime import timezone
 
 SEND_SMS_FLAG = 1
+MESSAGE_OLD_TIME_SECONDS = 200
 logger = VisaAppointmentLogger.getLogger()
 MESSAGE_ABOVE_LEN_IGNORE = 30
 message_src = None
@@ -34,6 +36,17 @@ api_hash = VisaAppointmentSecrets.telegram_api_hash
 
 client = TelegramClient('session_name1', api_id, api_hash)
 client.start()
+
+'''
+Filter Single message that are seen more than message_time_old_secs seconds back
+'''
+def filterOldMessage(message, message_time_old_secs):
+    dt = message.date
+    dt_utc = datetime.now(timezone.utc)
+    diff = (dt_utc-dt).total_seconds()
+    if diff >= message_time_old_secs:
+        return True
+    return False
 
 def getAllMessages(messages):
     mess={}
@@ -60,6 +73,10 @@ def getTextMessages(messages):
     return out
 
 def ignoreNotRelevantMessages(message):
+    #messages which are older than specified time difference
+    if filterOldMessage(message, MESSAGE_OLD_TIME_SECONDS):
+        logger.info("Ignoring message as its a older message:{} {} {}".format(message.date, datetime.now(timezone.utc), message))
+        return True
     if message.message:
         mesg_lower = message.message.lower()
         if len(mesg_lower) >= MESSAGE_ABOVE_LEN_IGNORE:
@@ -88,7 +105,6 @@ def getMediaMessages(messages):
 
 def getEntityData(entity_id, limit):
     entity = client.get_entity(entity_id)
-    today = datetime.datetime.today()
     posts = client(GetHistoryRequest(
                    peer=entity,
                    limit=limit,
@@ -239,6 +255,4 @@ def runApplication():
 while True:
     runApplication()
     time.sleep(15)
-
-
 
