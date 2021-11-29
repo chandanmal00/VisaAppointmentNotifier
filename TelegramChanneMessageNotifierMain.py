@@ -19,7 +19,7 @@ from datetime import datetime
 from datetime import timezone
 
 SEND_SMS_FLAG = 1
-MESSAGE_OLD_TIME_SECONDS = 200
+MESSAGE_OLD_TIME_SECONDS = 160
 logger = VisaAppointmentLogger.getLogger()
 MESSAGE_ABOVE_LEN_IGNORE = 30
 message_src = None
@@ -75,7 +75,7 @@ def getTextMessages(messages):
 def ignoreNotRelevantMessages(message):
     #messages which are older than specified time difference
     if filterOldMessage(message, MESSAGE_OLD_TIME_SECONDS):
-        logger.info("Ignoring message as its a older message:{} {} {}".format(message.date, datetime.now(timezone.utc), message))
+        logger.debug("Ignoring message as its a older message:{} {} {}".format(message.date, datetime.now(timezone.utc), message))
         return True
     if message.message:
         mesg_lower = message.message.lower()
@@ -160,10 +160,10 @@ def sendMessage(cnt, ratio, sms_users):
 
 def triggerConditionCheck(cnt, total_cnt, message_type_list):
     ratio = cnt / total_cnt
-    if 'media' in message_type_list and (ratio >= 0.5 or (cnt >= 4 and ratio >= 0.2)):
+    if 'media' in message_type_list and (ratio >= 0.3 or (cnt >= 4 and ratio >= 0.2)):
         return True
 
-    if (cnt >= 4 and ratio >= 0.6) or (cnt >= 5 and ratio >= 0.32):
+    if (cnt >= 4 and ratio >= 0.5) or (cnt >= 5 and ratio >= 0.25):
         return True
 
     if cnt >= 6:
@@ -254,5 +254,5 @@ def runApplication():
 
 while True:
     runApplication()
-    time.sleep(15)
+    time.sleep(30)
 
