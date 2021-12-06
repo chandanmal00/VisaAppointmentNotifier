@@ -30,6 +30,19 @@ I will start writing the insturctions on each topic.
 2. You will need to setup certain properties in VisaAppointmentSecrets.py : https://github.com/chandanmal00/VisaAppointmentNotifier/blob/main/VisaAppointmentSecrets.py
 This are essentially your Twilio Credentials, India/US phone numbers, Telegram Ids to send messages, Telegram credentials
 
+##Other Tips
+
+Nothing figured out on my own, all due to great work of everyone in the amazing Telegram Community, but here is what helped
+1. *Making sure: you have both mobile and laptop credentials saved like Amazon 1 click style
+2. *The checkbox and the captcha are a pain, so it takes time to get used to it, specially the autocomplete in safari has been a big pain for me that screwed me 2 times earlier
+3. *Time is your friend and being active during these two slots mentioned below is super important:
+4. *Typically Sunday PST, Monday PST, Tuesday PST are the ones where bulk slots are available
+5. Key Slots - 18, 48 mins is real and these times have worked best
+
+*1st slot - 6:48 - 7PM  PST
+*2nd slot - 8:48 -9:10PM PST
+
+
 ##Example Output Notifications
 
 1. Telegram Notifications:
@@ -41,6 +54,12 @@ This are essentially your Twilio Credentials, India/US phone numbers, Telegram I
 This is simlar to first one, but more stricter and much more accurate. The idea was to text only when must and also to save on texting costs.
 
 ![WhatsApp Image 2021-12-06 at 5 59 35 AM](https://user-images.githubusercontent.com/25375284/144770470-a0e3b7eb-7624-4333-827e-396852717dfa.jpeg)
+
+
+
+**Wish Everyone Best luck, everyone gets the appointment and are able to meet their loved ones, Aameen!
+
+
 
 
 
