@@ -11,7 +11,8 @@ logger = VisaAppointmentLogger.getLogger()
 
 ##This will help you get the userIds whom you want to notify when an appointment is available.
 #Typically the person who needs to get notified needs to sign with the Bot you create in the above setup,
-#send a messgage to bot and will will use the blow function to poll who is sending message to the bot and it will also help in setting permissions which allows Bot to message you too
+#send a messgage to bot and we will use the below function to poll who is sending message to the bot and get their telegram ID
+#and it will also help in setting permissions which allows Bot to message you too
 
 #Once you get this Id, add it to Secrets file: VisaAppointmentSecrets.py
 
