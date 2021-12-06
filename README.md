@@ -31,9 +31,10 @@ OR alternatively install Pycharm to run the code
 2. You will need to setup certain properties in VisaAppointmentSecrets.py : https://github.com/chandanmal00/VisaAppointmentNotifier/blob/main/VisaAppointmentSecrets.py
 This are essentially your Twilio Credentials, India/US phone numbers, Telegram Ids to send messages, Telegram credentials
 
-##Other Tips
+####Other Tips####
 
-Nothing figured out on my own, all due to great work of everyone in the amazing Telegram Community, but here is what helped
+Nothing figured out on my own, Everythinb below is due to great work by everyone(kindness/time to give back) in the amazing Telegram Community, Here is what helped us
+
 1. *Making sure: you have both mobile and laptop credentials saved like Amazon 1 click style
 2. *The checkbox and the captcha are a pain, so it takes time to get used to it, specially the autocomplete in safari has been a big pain for me that screwed me 2 times earlier
 3. *Time is your friend and being active during these two slots mentioned below is super important:
