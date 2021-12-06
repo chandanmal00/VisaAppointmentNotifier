@@ -1,4 +1,14 @@
 
+'''
+This is not important, It essentially uses AirTable to store a flag to send message or NOT.
+**I did not want to keep getting messages from the US desktop when am done with VISA, so this is like soft switch to stop messaging.
+**one could have terminated Twilio account/Telegram bot too., I was just curious to try AirTable
+https://www.airtable.com/
+
+*Feel free to comment the line to avoid this work
+1. https://github.com/chandanmal00/VisaAppointmentNotifier/blob/main/TelegramChanneMessageNotifierMain.py#L219
+2. https://github.com/chandanmal00/VisaAppointmentNotifier/blob/main/TelegramChanneMessageNotifierMain.py#L17
+'''
 import requests
 import json
 from datetime import datetime
