@@ -30,6 +30,22 @@ I will start writing the insturctions on each topic.
 2. You will need to setup certain properties in VisaAppointmentSecrets.py : https://github.com/chandanmal00/VisaAppointmentNotifier/blob/main/VisaAppointmentSecrets.py
 This are essentially your Twilio Credentials, India/US phone numbers, Telegram Ids to send messages, Telegram credentials
 
+##Example Output Notifications
+
+1. Telegram Notifications:
+<img width="611" alt="Screen Shot 2021-12-06 at 5 57 03 AM" src="https://user-images.githubusercontent.com/25375284/144770351-75658867-5ad2-4160-9e75-999b196b178d.png">
+
+>>The first one is the one you need to act ON, the 2nd is just a casual one to make note of
+
+2. Text Message Notification:
+This is simlar to first one, but more stricter and much more accurate. The idea was to text only when must and also to save on texting costs.
+
+![WhatsApp Image 2021-12-06 at 5 59 35 AM](https://user-images.githubusercontent.com/25375284/144770470-a0e3b7eb-7624-4333-827e-396852717dfa.jpeg)
+
+
+
+
+
 
 
 
