@@ -1,6 +1,8 @@
 # VisaAppointmentNotifier
 2021 is a horror story for getting US visa appointments, there are telegram groups where kind folks collabarate and share if slots are available. The application simply polls the group and update personal groups/send messages instead of checking the big group and the sea of messages there. This application is just a helper/aid to reduce the noise in the Telegram Group for appointments
 
+Discliamer: There is no guarantee that this is a sure shot way, it is just a means to the final destination.
+
 ##Why:
 
 It was a pain to check the embassy website everytime, Lucliky there is a wonderful group where everyone shares the status of appointment availability. 
@@ -28,12 +30,14 @@ OR alternatively install Pycharm to run the code
 
 1. TelegramChanneMessageNotifierMain.py is the main starting place - this will run the application polling every 30 secs: https://github.com/chandanmal00/VisaAppointmentNotifier/blob/main/TelegramChanneMessageNotifierMain.py#L257
 
+command line: python TelegramChanneMessageNotifierMain.py
+
 2. You will need to setup certain properties in VisaAppointmentSecrets.py : https://github.com/chandanmal00/VisaAppointmentNotifier/blob/main/VisaAppointmentSecrets.py
 This are essentially your Twilio Credentials, India/US phone numbers, Telegram Ids to send messages, Telegram credentials
 
 ####Other Tips####
 
-Nothing figured out on my own, Everythinb below is due to great work by everyone(kindness/time to give back) in the amazing Telegram Community, Here is what helped us
+Nothing figured out on my own, Everything below is due to great work by everyone(kindness/time to give back) in the amazing Telegram Community, Here is what helped us
 
 1. *Making sure: you have both mobile and laptop credentials saved like Amazon 1 click style
 2. *The checkbox and the captcha are a pain, so it takes time to get used to it, specially the autocomplete in safari has been a big pain for me that screwed me 2 times earlier
