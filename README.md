@@ -21,7 +21,8 @@ The next step is in general for you to act - typically check the real telegram g
 4. If your python geek, you can run the file TelegramChanneMessageNotifierMain.py : https://github.com/chandanmal00/VisaAppointmentNotifier/blob/main/TelegramChanneMessageNotifierMain.py
 OR alternatively install Pycharm to run the code
 5. You need to setup secrets/configurations which are mentioned below in How section
-I will start writing the insturctions on each topic.
+
+*I will start writing the insturctions on each topic.
 
 ##How:
 
